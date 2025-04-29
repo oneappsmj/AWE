@@ -8,5 +8,9 @@
     <true/>
     <key>com.apple.developer.networking.multicast</key>
     <true/>
+<key>com.apple.developer.avfoundation.multitasking.camera</key>
+  <false/>
+  <key>com.apple.developer.avfoundation.multitasking.microphone</key>
+  <false/>
 </dict>
 </plist>
