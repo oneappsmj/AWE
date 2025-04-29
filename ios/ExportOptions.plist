@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>app-store</string> <!-- Distribution method (app-store, ad-hoc, development) -->
+    <key>teamID</key>
+    <string>CV8N38BFPJ</string> <!-- Get from Apple Developer Portal -->
+    <key>uploadBitcode</key>
+    <false/> <!-- Disable for Flutter -->
+    <key>uploadSymbols</key>
+    <true/>
+</dict>
+</plist>
