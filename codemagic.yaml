@@ -1,40 +1,49 @@
 workflows:
-  ios-method-1:
-    name: IOS signing method-1 workflow
+  ios-appstore-publish:
+    name: iOS App Store Publish Workflow
     environment:
+      vars:
+        APP_STORE_CONNECT_KEY_IDENTIFIER: "NXQJ9R493G"           # From App Store Connect
+        APP_STORE_CONNECT_ISSUER_ID: "8b720896-3b73-4636-965b-29ce6a0731da"                # From App Store Connect
+        APP_STORE_CONNECT_PRIVATE_KEY: "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgkO6qo0P4K9kZBQOIEPxLaq6IAGcspM2QB0YMOELElCGgCgYIKoZIzj0DAQehRANCAATlI5EgkSSL4j9130fwVvOSMeUIWGQE356Pxj101Fm+tqhpQh1wQosD/f+oaGiygOKSQo5l5X9ly8X2s2B07UcX"        # From App Store Connect
+        CERTIFICATE_PRIVATE_KEY: "$CM_CERTIFICATE_PRIVATE_KEY"  # From Codemagic UI
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.example.downloadsplatform.CV8N38BFPJ
+        team_id: "CV8N38BFPJ"  # From Apple Developer Portal (e.g., A1B2C3D4E5)
     scripts:
-      - script: keychain initialize
-      - script: keychain add-certificates
-      - script: xcode-project use-profiles
-      - script: flutter packages pub get
-      - name: flutter build ipa and automatic versioning
-        script: flutter build ipa --export-options-plist=/Users/builder/export_options.plist
-    artifacts:
-      - build/ios/ipa/*.ipa
-    publishing:
-      email:
-        recipients:
-          - oneappsmj@gmail.com
+      # Set up code signing
+      - keychain initialize
+      - keychain add-certificates
 
-  ios-method-2:
-    name: ios signing method-2 workflow
-    environment:
-      ios_signing:
-        provisioning_profiles:
-          - com.example.downloadsplatform.CV8N38BFPJ
-        certificates:
-          - Download_Platform
-    scripts:
-      - script: xcode-project use-profiles
-      - script: flutter packages pub get
-      - name: Flutter build ipa and automatic versioning
-        script: flutter build ipa --export-options-plist=/Users/builder/export_options.plist
+      # Configure Xcode project
+      - xcode-project use-profiles
+      - xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
+
+      # Flutter build with versioning
+      - flutter packages pub get
+      - name: Build IPA for App Store
+        script: |
+          flutter build ipa \
+            --release \
+            --export-options-plist ios/ExportOptions.plist \
+            --build-number=$CM_BUILD_NUMBER \
+            --build-name=1.0.$CM_BUILD_NUMBER
+
+      # Publish to App Store Connect
+      - app-store-connect publish \
+          --ipa build/ios/ipa/*.ipa \
+          --app-store-version-info "Release 1.0.$CM_BUILD_NUMBER" \
+          --submit-to-app-store
+
     artifacts:
       - build/ios/ipa/*.ipa
+      
     publishing:
       email:
         recipients:
           - oneappsmj@gmail.com
+      app_store_connect:  # Optional: Publish directly to TestFlight
+        submit_to_testflight: true
+        beta_groups:  # Add your TestFlight beta group names
+          - "Internal Testers"
