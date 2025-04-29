@@ -3,14 +3,13 @@ workflows:
     name: iOS App Store Publish Workflow
     environment:
       vars:
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "NXQJ9R493G"           # From App Store Connect
-        APP_STORE_CONNECT_ISSUER_ID: "8b720896-3b73-4636-965b-29ce6a0731da"                # From App Store Connect
-        APP_STORE_CONNECT_PRIVATE_KEY: "MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgkO6qo0P4K9kZBQOIEPxLaq6IAGcspM2QB0YMOELElCGgCgYIKoZIzj0DAQehRANCAATlI5EgkSSL4j9130fwVvOSMeUIWGQE356Pxj101Fm+tqhpQh1wQosD/f+oaGiygOKSQo5l5X9ly8X2s2B07UcX"        # From App Store Connect
-        CERTIFICATE_PRIVATE_KEY: "$CM_CERTIFICATE_PRIVATE_KEY"  # From Codemagic UI
+       
+        APP_STORE_CONNECT_PRIVATE_KEY: "$APPSTORECONNECTPRIVATEKEY"        # From App Store Connect
+        CERTIFICATE_PRIVATE_KEY: "$Downloadsplatform"  # From Codemagic UI
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.example.downloadsplatform.CV8N38BFPJ
-        team_id: "CV8N38BFPJ"  # From Apple Developer Portal (e.g., A1B2C3D4E5)
+        team_id: "$APPSTORECONNECTTEAMID"  # From Apple Developer Portal (e.g., A1B2C3D4E5)
     scripts:
       # Set up code signing
       - keychain initialize
