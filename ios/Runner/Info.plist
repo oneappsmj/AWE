@@ -25,6 +25,15 @@
   <key>LSRequiresIPhoneOS</key>
   <true/>
 
+<key>method</key>
+    <string>app-store</string>
+    <key>teamID</key>
+    <string>CV8N38BFPJ</string> <!-- Get from Apple Developer Portal -->
+    <key>uploadBitcode</key>
+    <false/>
+    <key>uploadSymbols</key>
+    <true/>
+
   <!-- Launch Screen Configuration -->
   <key>UILaunchStoryboardName</key>
   <string>LaunchScreen</string>
