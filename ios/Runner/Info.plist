@@ -109,13 +109,12 @@
   <string>$(PRODUCT_BUNDLE_IDENTIFIER).background-task</string>
 </array>
 <!-- Enable PiP for iOS -->
-<key>UIApplicationExitsOnSuspend</key>
-<false/>
+
   <!-- Background Modes -->
   <key>UIBackgroundModes</key>
 <array>
     <string>audio</string>
-    <string>fetch</string>
+   
     
     
 </array>
