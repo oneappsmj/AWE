@@ -1,5 +1,5 @@
 flutter_icons:
-  android: true
+  android: false
   ios: true
   image_path: "assets/icon/icon.png"  # Path to your source icon
   remove_alpha_ios: true              # Fixes alpha channel error
