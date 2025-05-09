@@ -1,0 +1,2 @@
+D:/AWE/android/app/.cxx/Debug/1d5k302a/x86/CMakeFiles/edit_cache.dir
+D:/AWE/android/app/.cxx/Debug/1d5k302a/x86/CMakeFiles/rebuild_cache.dir

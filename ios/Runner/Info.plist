@@ -112,25 +112,22 @@
 
   <!-- Background Modes -->
   <key>UIBackgroundModes</key>
-<array>
+  <array>
     <string>audio</string>
-   
+    <string>fetch</string>
+    <string>processing</string>
     
-    
-</array>
-<key>NSBonjourServices</key>
-<array>
-    <string>_dartobservatory._tcp</string>
-</array>
-<key>NSLocalNetworkUsageDescription</key>
-<string>This app needs access to the local network for debugging purposes.</string>
+  </array>
 
-<key>AVAudioSessionCategoryOptions</key>
-<array>
+  <!-- PiP Configuration -->
+  <key>UIApplicationSupportsPictureInPicture</key>
+  <true/>
+  <key>AVAudioSessionCategoryOptions</key>
+  <array>
     <string>AVAudioSessionCategoryOptionMixWithOthers</string>
-</array>
-<key>UIApplicationSupportsPictureInPicture</key>
-<true/>
+    <string>AVAudioSessionCategoryOptionAllowAirPlay</string>
+    <string>AVAudioSessionCategoryOptionAllowBluetooth</string>
+  </array>
 
   <!-- Notifications -->
   <key>NSUserNotificationCenterUsageDescription</key>
