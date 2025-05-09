@@ -22,12 +22,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:crypto/crypto.dart';
 // For Android
 import 'package:floating/floating.dart' as Float;
-// For iOS  
+// For iOS
 import 'package:fl_pip/fl_pip.dart' as flpip;
-import 'package:pip_view/pip_view.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:downloadsplatform/screens/BottomBar/PipHandler.dart';
-
 
 import 'dart:convert';
 
@@ -159,12 +157,12 @@ class _FileManagerState extends State<FileManager> {
   @override
   void dispose() {
     // Dispose all video controllers when the widget is disposed
-    
+
     for (var controller in _videoControllers.values) {
       controller.dispose();
     }
     _videoControllers.clear();
-  
+
     super.dispose();
   }
 
@@ -686,15 +684,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   GlobalKey _betterPlayerKey = GlobalKey();
   static const _pipChannel = MethodChannel('pip_channel');
   bool _showPip = false;
-Offset _pipPosition = Offset(20, 20);
-double _pipSize = 200;
+  Offset _pipPosition = Offset(20, 20);
+  double _pipSize = 200;
 // Add this global variable at the top of your file
-bool _globalPipActive = false;
-Offset _globalPipPosition = Offset(20, 20);
-double _globalPipSize = 300; // Increased from 200 to 300
+  bool _globalPipActive = false;
+  Offset _globalPipPosition = Offset(20, 20);
+  double _globalPipSize = 300; // Increased from 200 to 300
 
-void _togglePip() async {
- 
+  void _togglePip() async {
     // Android: Existing native PiP logic
     if (_globalPipActive) {
       await _exitPipMode();
@@ -702,263 +699,258 @@ void _togglePip() async {
       await _enterPipMode();
     }
     setState(() => _globalPipActive = !_globalPipActive);
-  
-}
-// Add these handler methods
-void _toggleFullScreenFromPip() {
-  setState(() {
-    _globalPipActive = false;
-    _isFullScreen = true;
-  });
-  _toggleFullScreen();
-}
-
-
-Future<void> _initAudioSession() async {
-  final session = await AudioSession.instance;
-  
-  if (Platform.isAndroid) {
-    await session.configure(const AudioSessionConfiguration(
-      avAudioSessionCategory: AVAudioSessionCategory.playback,
-      avAudioSessionCategoryOptions: 
-          AVAudioSessionCategoryOptions.allowBluetooth,
-      avAudioSessionMode: AVAudioSessionMode.defaultMode,
-      androidAudioAttributes: AndroidAudioAttributes(
-        contentType: AndroidAudioContentType.music,
-        flags: AndroidAudioFlags.none,
-        usage: AndroidAudioUsage.media,
-      ),
-      androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-      androidWillPauseWhenDucked: true,
-    ));
-  } else if (Platform.isIOS) {
-    await session.configure(const AudioSessionConfiguration(
-      avAudioSessionCategory: AVAudioSessionCategory.playback,
-      avAudioSessionCategoryOptions: 
-          AVAudioSessionCategoryOptions.allowBluetooth ,
-      
-      avAudioSessionMode: AVAudioSessionMode.defaultMode,
-    ));
   }
-}
 
-Widget _buildPipOverlay() {
-  return Positioned(
-    left: _pipPosition.dx,
-    top: _pipPosition.dy,
-    child: GestureDetector(
-      onPanUpdate: (details) {
-        setState(() => _pipPosition += details.delta);
-      },
-      child: Container(
-        width: _pipSize,
-        height: _pipSize * 9 / 16,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 8,
-              spreadRadius: 2,
-            )
-          ],
+// Add these handler methods
+  void _toggleFullScreenFromPip() {
+    setState(() {
+      _globalPipActive = false;
+      _isFullScreen = true;
+    });
+    _toggleFullScreen();
+  }
+
+  Future<void> _initAudioSession() async {
+    final session = await AudioSession.instance;
+
+    if (Platform.isAndroid) {
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.allowBluetooth,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        androidAudioAttributes: AndroidAudioAttributes(
+          contentType: AndroidAudioContentType.music,
+          flags: AndroidAudioFlags.none,
+          usage: AndroidAudioUsage.media,
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Stack(
-            children: [
-              // Video Content
-              VideoPlayer(_controller),
-              
-              // Control Bar
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 40,
-                  color: Colors.black54,
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Full Screen Button
-                      IconButton(
-                        icon: Icon(Icons.fullscreen, color: Colors.white),
-                        onPressed: () {
-                          setState(() {
-                            _showPip = false;
-                            if (!_isFullScreen) _toggleFullScreen();
-                            if (!_isPlaying) _togglePlayPause();
-                          });
-                        },
-                      ),
-                      
-                      // Play/Pause Button
-                      IconButton(
-                        icon: Icon(
-                          _isPlaying ? Icons.pause : Icons.play_arrow,
-                          color: Colors.white,
+        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+        androidWillPauseWhenDucked: true,
+      ));
+    } else if (Platform.isIOS) {
+      await session.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions:
+            AVAudioSessionCategoryOptions.allowBluetooth,
+        avAudioSessionMode: AVAudioSessionMode.defaultMode,
+      ));
+    }
+  }
+
+  Widget _buildPipOverlay() {
+    return Positioned(
+      left: _pipPosition.dx,
+      top: _pipPosition.dy,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() => _pipPosition += details.delta);
+        },
+        child: Container(
+          width: _pipSize,
+          height: _pipSize * 9 / 16,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 8,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              children: [
+                // Video Content
+                VideoPlayer(_controller),
+
+                // Control Bar
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 40,
+                    color: Colors.black54,
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Full Screen Button
+                        IconButton(
+                          icon: Icon(Icons.fullscreen, color: Colors.white),
+                          onPressed: () {
+                            setState(() {
+                              _showPip = false;
+                              if (!_isFullScreen) _toggleFullScreen();
+                              if (!_isPlaying) _togglePlayPause();
+                            });
+                          },
                         ),
-                        onPressed: _togglePlayPause,
-                      ),
-                      
-                      // Close Button
-                      IconButton(
-                        icon: Icon(Icons.close, color: Colors.white),
-                        onPressed: () {
-                          setState(() {
-                            _showPip = false;
-                            _controller.pause();
-                          });
-                        },
-                      ),
-                    ],
+
+                        // Play/Pause Button
+                        IconButton(
+                          icon: Icon(
+                            _isPlaying ? Icons.pause : Icons.play_arrow,
+                            color: Colors.white,
+                          ),
+                          onPressed: _togglePlayPause,
+                        ),
+
+                        // Close Button
+                        IconButton(
+                          icon: Icon(Icons.close, color: Colors.white),
+                          onPressed: () {
+                            setState(() {
+                              _showPip = false;
+                              _controller.pause();
+                            });
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-Widget _buildGlobalPipOverlay() {
-  if (!_globalPipActive) return const SizedBox.shrink();
-
-  return Positioned(
-    left: _globalPipPosition.dx,
-    top: _globalPipPosition.dy,
-    child: GestureDetector(
-      onPanUpdate: (details) {
-        setState(() => _globalPipPosition += details.delta);
-      },
-      child: Container(
-        width: _globalPipSize,
-        height: _globalPipSize * 9 / 16,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 12,
-              spreadRadius: 4,
-            )
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            children: [
-              VideoPlayer(_controller),
-              _buildPipControls(),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-// Separate control building
-Widget _buildPipControls() {
-  return Positioned.fill(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Top controls
-        Container(
-          color: Colors.black54,
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                icon: Icon(Icons.close, color: Colors.white, size: 28),
-                onPressed: _closePip,
-              ),
-            ],
-          ),
-        ),
-        
-        // Center play controls
-        Expanded(
-          child: Center(
-            child: IconButton(
-              icon: Icon(
-                _isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.white,
-                size: 42,
-              ),
-              onPressed: _togglePlayPause,
+              ],
             ),
           ),
         ),
-        
-        // Bottom controls
-        Container(
-          color: Colors.black54,
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: Icon(Icons.replay_10, color: Colors.white, size: 28),
-                onPressed: _skipBackward,
-              ),
-              IconButton(
-                icon: Icon(Icons.fullscreen, color: Colors.white, size: 28),
-                onPressed: _toggleFullScreenFromPip,
-              ),
-              IconButton(
-                icon: Icon(Icons.forward_10, color: Colors.white, size: 28),
-                onPressed: _skipForward,
-              ),
+      ),
+    );
+  }
+
+  Widget _buildGlobalPipOverlay() {
+    if (!_globalPipActive) return const SizedBox.shrink();
+
+    return Positioned(
+      left: _globalPipPosition.dx,
+      top: _globalPipPosition.dy,
+      child: GestureDetector(
+        onPanUpdate: (details) {
+          setState(() => _globalPipPosition += details.delta);
+        },
+        child: Container(
+          width: _globalPipSize,
+          height: _globalPipSize * 9 / 16,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black38,
+                blurRadius: 12,
+                spreadRadius: 4,
+              )
             ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                VideoPlayer(_controller),
+                _buildPipControls(),
+              ],
+            ),
+          ),
         ),
-      ],
-    ),
-  );
-}
-
-
-void _closePip() {
-  setState(() {
-    _globalPipActive = false;
-    if (_isPlaying) _togglePlayPause();
-  });
-  if (Platform.isIOS) {
-    _pipChannel.invokeMethod('stopPip');
+      ),
+    );
   }
-}
 
+// Separate control building
+  Widget _buildPipControls() {
+    return Positioned.fill(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Top controls
+          Container(
+            color: Colors.black54,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 28),
+                  onPressed: _closePip,
+                ),
+              ],
+            ),
+          ),
 
+          // Center play controls
+          Expanded(
+            child: Center(
+              child: IconButton(
+                icon: Icon(
+                  _isPlaying ? Icons.pause : Icons.play_arrow,
+                  color: Colors.white,
+                  size: 42,
+                ),
+                onPressed: _togglePlayPause,
+              ),
+            ),
+          ),
+
+          // Bottom controls
+          Container(
+            color: Colors.black54,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.replay_10, color: Colors.white, size: 28),
+                  onPressed: _skipBackward,
+                ),
+                IconButton(
+                  icon: Icon(Icons.fullscreen, color: Colors.white, size: 28),
+                  onPressed: _toggleFullScreenFromPip,
+                ),
+                IconButton(
+                  icon: Icon(Icons.forward_10, color: Colors.white, size: 28),
+                  onPressed: _skipForward,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _closePip() {
+    setState(() {
+      _globalPipActive = false;
+      if (_isPlaying) _togglePlayPause();
+    });
+    if (Platform.isIOS) {
+      _pipChannel.invokeMethod('stopPip');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (Platform.isIOS) {
-    _initializePlayer();
-  } 
-   _initializeVideoPlayer();
+      _initializePlayer();
+    }
+    _initializeVideoPlayer();
     _initVolumeListener();
-   
-    
+
     // Make sure overlays are hidden at start
     _showVolumeOverlay = false;
     _showBrightnessOverlay = false;
   }
 
+  void _initializePlayer() async {
+    await PiPService.initialize();
+  }
 
-void _initializePlayer() async{
-   await PiPService.initialize();
-
-}
-void _startControlsTimer() {
+  void _startControlsTimer() {
     _controlsTimer?.cancel();
     _controlsTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => _showControls = false);
@@ -1239,8 +1231,6 @@ void _startControlsTimer() {
   }
 
   void _togglePlayPause() {
-  
-
     setState(() {
       if (_isPlaying) {
         _controller.pause();
@@ -1249,9 +1239,7 @@ void _startControlsTimer() {
       }
       _isPlaying = !_isPlaying;
     });
-    
   }
- 
 
   void _skipForward() {
     final currentPosition = _controller.value.position;
@@ -1265,8 +1253,8 @@ void _startControlsTimer() {
     _controller
         .seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
   }
-  
-void _toggleFullScreen() {
+
+  void _toggleFullScreen() {
     setState(() => _isFullScreen = !_isFullScreen);
     if (_isFullScreen) {
       SystemChrome.setPreferredOrientations([
@@ -1280,7 +1268,7 @@ void _toggleFullScreen() {
       // Show status bar
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
-}
+  }
 
   Widget _buildControls() {
     return AnimatedOpacity(
@@ -1342,7 +1330,7 @@ void _toggleFullScreen() {
                     IconButton(
                       icon: const Icon(Icons.replay_10,
                           size: 40, color: Colors.white),
-                      onPressed:_skipBackward,
+                      onPressed: _skipBackward,
                     ),
                     IconButton(
                       icon: Icon(
@@ -1355,7 +1343,7 @@ void _toggleFullScreen() {
                     IconButton(
                       icon: const Icon(Icons.forward_10,
                           size: 40, color: Colors.white),
-                      onPressed:_skipForward,
+                      onPressed: _skipForward,
                     ),
                   ],
                 ),
@@ -1394,13 +1382,11 @@ void _toggleFullScreen() {
         state == AppLifecycleState.inactive) {
       // User is leaving the app, enter PiP if not already in PiP
       if (!_isInPipMode && _isInitialized && _isPlaying) {
-        
         _enterPipMode();
-
       }
-       if (Platform.isIOS && _isPlaying) {
-      _togglePip(); // Automatically enter PiP when app backgrounds
-    }
+      if (Platform.isIOS && _isPlaying) {
+        _togglePip(); // Automatically enter PiP when app backgrounds
+      }
     } else if (state == AppLifecycleState.resumed && _isInPipMode) {
       // User returned to the app while in PiP, exit PiP
       _exitPipMode();
@@ -1439,68 +1425,64 @@ void _toggleFullScreen() {
           setState(() => _globalPipActive = true);
         }
       } else if (Platform.isIOS) {
-      // iOS implementation using flutter_in_app_pip
-      // Create PiP widget with Android-style controls
-      //  try {
-      // bool isPipSupported = await _pipChannel.invokeMethod('isPipSupported');
-      // if (!isPipSupported) {
-      //   if (mounted) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       SnackBar(content: Text('PiP not supported on this device')),
-      //     );
-      //   }
-      //   return;
-      // }
-      
-     bool isSupported = await PiPService.isPiPSupported();
-                if (isSupported) {
-                  await PiPService.startPiP(widget.filePath);
-                  setState(() => _globalPipActive = true);
-                } else {
-                  print("PiP not supported on this device.");
-                }
-      //  final isAvailable = await flpip.FlPiP().isAvailable;
-      //   bool? isSupported = await _pipChannel.invokeMethod<bool>('isPipSupported');
-      //     if (isSupported != true) {
-      //   if (mounted) {
-      //     ScaffoldMessenger.of(context).showSnackBar(
-      //       const SnackBar(content: Text('PiP not supported on this device')),
-      //     );
-      //   }
-      //   return;
-      // }
+        // iOS implementation using flutter_in_app_pip
+        // Create PiP widget with Android-style controls
+        //  try {
+        // bool isPipSupported = await _pipChannel.invokeMethod('isPipSupported');
+        // if (!isPipSupported) {
+        //   if (mounted) {
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //       SnackBar(content: Text('PiP not supported on this device')),
+        //     );
+        //   }
+        //   return;
+        // }
 
-      //         if (isAvailable) {
-      //           // Enable PiP with iOS configuration
-      //           await flpip.FlPiP().enable(
-      //             ios: flpip.FlPiPiOSConfig(
-      //               // Point to your actual video file in assets
-      //               videoPath: widget.filePath,
-      //               // Use null for your own project assets
-      //               packageName: null,
-      //               createNewEngine: true,
-      //               // Enable playback controls
-      //               enableControls: true,
-      //               // Enable playback speed controls
-      //               enablePlayback: true,
-      //               // Continue PiP when app is in background
-      //               enabledWhenBackground: true,
-      //             ),
-      //           );
-                
-      //           // Put app in background mode to show PiP
-      //           await flpip.FlPiP().toggle(flpip.AppState.background);
-      //         } else {
-      //           ScaffoldMessenger.of(context).showSnackBar(
-      //             const SnackBar(content: Text('PiP is not available on this device')),
-      //           );
-      //         }
-      
-      
-    } 
+        bool isSupported = await PiPService.isPiPSupported();
+        if (isSupported) {
+          await PiPService.startPiP(widget.filePath);
+          setState(() => _globalPipActive = true);
+        } else {
+          print("PiP not supported on this device.");
+        }
+        //  final isAvailable = await flpip.FlPiP().isAvailable;
+        //   bool? isSupported = await _pipChannel.invokeMethod<bool>('isPipSupported');
+        //     if (isSupported != true) {
+        //   if (mounted) {
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //       const SnackBar(content: Text('PiP not supported on this device')),
+        //     );
+        //   }
+        //   return;
+        // }
 
-       
-      } catch (e) {
+        //         if (isAvailable) {
+        //           // Enable PiP with iOS configuration
+        //           await flpip.FlPiP().enable(
+        //             ios: flpip.FlPiPiOSConfig(
+        //               // Point to your actual video file in assets
+        //               videoPath: widget.filePath,
+        //               // Use null for your own project assets
+        //               packageName: null,
+        //               createNewEngine: true,
+        //               // Enable playback controls
+        //               enableControls: true,
+        //               // Enable playback speed controls
+        //               enablePlayback: true,
+        //               // Continue PiP when app is in background
+        //               enabledWhenBackground: true,
+        //             ),
+        //           );
+
+        //           // Put app in background mode to show PiP
+        //           await flpip.FlPiP().toggle(flpip.AppState.background);
+        //         } else {
+        //           ScaffoldMessenger.of(context).showSnackBar(
+        //             const SnackBar(content: Text('PiP is not available on this device')),
+        //           );
+        //         }
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('PiP error: ${e.toString()}')),
       );
@@ -1509,88 +1491,87 @@ void _toggleFullScreen() {
 
   Future<void> _exitPipMode() async {
     if (_globalPipActive) {
-      
-        if (Platform.isIOS) {
-          try {
-     await PiPService.stopPiP();
+      if (Platform.isIOS) {
+        try {
+          await PiPService.stopPiP();
 
-        setState(() => _globalPipActive = false);
-      } catch (e) {
-        print('Error exiting PiP mode: $e');
-      }
+          setState(() => _globalPipActive = false);
+        } catch (e) {
+          print('Error exiting PiP mode: $e');
         }
+      }
     }
   }
-  Widget _buildVideoPlayer() {
-  return Center(
-    child: AspectRatio(
-      aspectRatio: _controller.value.aspectRatio,
-      child: VideoPlayer(_controller),
-    ),
-  );
-}
 
- @override
-Widget build(BuildContext context) {
-  if (!_isInitialized) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Video Player'),
-      ),
-      body: const Center(
-        child: CircularProgressIndicator(),
+  Widget _buildVideoPlayer() {
+    return Center(
+      child: AspectRatio(
+        aspectRatio: _controller.value.aspectRatio,
+        child: VideoPlayer(_controller),
       ),
     );
   }
 
-  return WillPopScope(
-    onWillPop: () async {
-      if (_isFullScreen) {
-        _toggleFullScreen();
-        return false;
-      }
-      return true;
-    },
-    child: Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          if (!_globalPipActive)
-            GestureDetector(
-              onTap: _toggleControls,
-              onVerticalDragStart: _handleVerticalDragStart,
-              onVerticalDragUpdate: _handleVerticalDragUpdate,
-              onVerticalDragEnd: _handleVerticalDragEnd,
-              child: _isFullScreen
-                  ? SizedBox.expand(
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SizedBox(
-                          width:  _controller.value.size.width,
-                          height:  _controller.value.size.height,
-                          child:  VideoPlayer(_controller),
+  @override
+  Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Video Player'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isFullScreen) {
+          _toggleFullScreen();
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            if (!_globalPipActive)
+              GestureDetector(
+                onTap: _toggleControls,
+                onVerticalDragStart: _handleVerticalDragStart,
+                onVerticalDragUpdate: _handleVerticalDragUpdate,
+                onVerticalDragEnd: _handleVerticalDragEnd,
+                child: _isFullScreen
+                    ? SizedBox.expand(
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: SizedBox(
+                            width: _controller.value.size.width,
+                            height: _controller.value.size.height,
+                            child: VideoPlayer(_controller),
+                          ),
+                        ),
+                      )
+                    : Center(
+                        child: AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          child: VideoPlayer(_controller),
                         ),
                       ),
-                    )
-                  : Center(
-                      child: AspectRatio(
-                        aspectRatio:  _controller.value.aspectRatio,
-                        child: VideoPlayer(_controller),
-                      ),
-                    ),
-            ),
-          // PiP Overlay (shown when active)
-          if(_globalPipActive) _buildGlobalPipOverlay(),
-          if (_showPip) _buildPipOverlay(),
-          if (_showControls && !_globalPipActive) _buildControls(),
-          if (_showVolumeOverlay) _buildVolumeOverlay(),
-          if (_showBrightnessOverlay) _buildBrightnessOverlay(),
-        ],
+              ),
+            // PiP Overlay (shown when active)
+            if (_globalPipActive) _buildGlobalPipOverlay(),
+            if (_showPip) _buildPipOverlay(),
+            if (_showControls && !_globalPipActive) _buildControls(),
+            if (_showVolumeOverlay) _buildVolumeOverlay(),
+            if (_showBrightnessOverlay) _buildBrightnessOverlay(),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }
 
 // Add this in main.dart or a separate file
@@ -1872,15 +1853,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   }
 }
 
-    class PDFViewerScreen extends StatelessWidget {
-    final String filePath;
-    PDFViewerScreen({required this.filePath});
+class PDFViewerScreen extends StatelessWidget {
+  final String filePath;
+  PDFViewerScreen({required this.filePath});
 
-    @override
-    Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-    appBar: AppBar(title: Text('عرض PDF')), // Fixed line
-    body: PDFView(filePath: filePath),
+      appBar: AppBar(title: Text('عرض PDF')), // Fixed line
+      body: PDFView(filePath: filePath),
     );
-    }
-    }
+  }
+}
