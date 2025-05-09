@@ -109,12 +109,7 @@ class NativeThumbnail {
   }
 }
 
-enum SortOption {
-  nameAsc,
-  nameDesc,
-  dateAsc,
-  dateDesc,
-}
+enum SortOption { nameAsc, nameDesc, dateAsc, dateDesc }
 
 class FileManager extends StatefulWidget {
   @override
@@ -184,7 +179,11 @@ class _FileManagerState extends State<FileManager> {
     final cachedThumb = await ThumbnailCache.getThumbnail(file.path);
     if (cachedThumb != null) {
       return Image(
-          image: cachedThumb, width: 40, height: 40, fit: BoxFit.cover);
+        image: cachedThumb,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+      );
     }
 
     if (filters['صور']!.contains(ext)) {
@@ -202,8 +201,11 @@ class _FileManagerState extends State<FileManager> {
     try {
       final image = FileImage(File(file.path));
       final completer = Completer<ImageInfo>();
-      image.resolve(ImageConfiguration()).addListener(
-          ImageStreamListener((info, _) => completer.complete(info)));
+      image
+          .resolve(ImageConfiguration())
+          .addListener(
+            ImageStreamListener((info, _) => completer.complete(info)),
+          );
       await completer.future;
       ThumbnailCache.addThumbnail(file.path, image);
       return Image(image: image, width: 40, height: 40, fit: BoxFit.cover);
@@ -226,7 +228,11 @@ class _FileManagerState extends State<FileManager> {
       final cachedThumb = await ThumbnailCache.getThumbnail(videoPath);
       if (cachedThumb != null) {
         return Image(
-            image: cachedThumb, width: 40, height: 40, fit: BoxFit.cover);
+          image: cachedThumb,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+        );
       }
 
       final tempDir = await getTemporaryDirectory();
@@ -251,7 +257,11 @@ class _FileManagerState extends State<FileManager> {
             final imageProvider = FileImage(File(compressedPath.path));
             ThumbnailCache.addThumbnail(videoPath, imageProvider);
             return Image(
-                image: imageProvider, width: 40, height: 40, fit: BoxFit.cover);
+              image: imageProvider,
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+            );
           }
         }
 
@@ -259,7 +269,11 @@ class _FileManagerState extends State<FileManager> {
         final imageProvider = FileImage(File(generatedPath));
         ThumbnailCache.addThumbnail(videoPath, imageProvider);
         return Image(
-            image: imageProvider, width: 40, height: 40, fit: BoxFit.cover);
+          image: imageProvider,
+          width: 40,
+          height: 40,
+          fit: BoxFit.cover,
+        );
       }
 
       return const Icon(Icons.video_file, size: 40);
@@ -293,8 +307,9 @@ class _FileManagerState extends State<FileManager> {
           if (status.isGranted) {
             // Continue with directory setup
             final baseDir = Directory('/storage/emulated/0/Download');
-            currentDirectory =
-                Directory(path.join(baseDir.path, 'Downloads Platform'));
+            currentDirectory = Directory(
+              path.join(baseDir.path, 'Downloads Platform'),
+            );
             baseDownloadPath = currentDirectory!.path;
 
             if (!await currentDirectory!.exists()) {
@@ -311,8 +326,9 @@ class _FileManagerState extends State<FileManager> {
           final status = await Permission.manageExternalStorage.request();
           if (status.isGranted) {
             final baseDir = Directory('/storage/emulated/0/Download');
-            currentDirectory =
-                Directory(path.join(baseDir.path, 'Downloads Platform'));
+            currentDirectory = Directory(
+              path.join(baseDir.path, 'Downloads Platform'),
+            );
             baseDownloadPath = currentDirectory!.path;
 
             if (!await currentDirectory!.exists()) {
@@ -336,20 +352,21 @@ class _FileManagerState extends State<FileManager> {
       }
     } catch (e) {
       print('Error initializing directory: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('فشل في تهيئة المجلد')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('فشل في تهيئة المجلد')));
     }
   }
 
   Future<void> getFiles() async {
     if (currentDirectory == null || !currentDirectory!.existsSync()) return;
 
-    final fileList = currentDirectory!.listSync().where((file) {
-      if (FileSystemEntity.isDirectorySync(file.path)) return true;
-      final ext = file.path.split('.').last.toLowerCase();
-      return filters.values.expand((e) => e).contains(ext);
-    }).toList();
+    final fileList =
+        currentDirectory!.listSync().where((file) {
+          if (FileSystemEntity.isDirectorySync(file.path)) return true;
+          final ext = file.path.split('.').last.toLowerCase();
+          return filters.values.expand((e) => e).contains(ext);
+        }).toList();
 
     setState(() {
       files = fileList;
@@ -387,9 +404,9 @@ class _FileManagerState extends State<FileManager> {
     try {
       await Share.shareXFiles([XFile(file.path)]);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('فشل في المشاركة')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('فشل في المشاركة')));
     }
   }
 
@@ -408,26 +425,32 @@ class _FileManagerState extends State<FileManager> {
     void sortList(List<FileSystemEntity> list) {
       switch (currentSort) {
         case SortOption.nameAsc:
-          list.sort((a, b) => a.path
-              .split('/')
-              .last
-              .toLowerCase()
-              .compareTo(b.path.split('/').last.toLowerCase()));
+          list.sort(
+            (a, b) => a.path
+                .split('/')
+                .last
+                .toLowerCase()
+                .compareTo(b.path.split('/').last.toLowerCase()),
+          );
           break;
         case SortOption.nameDesc:
-          list.sort((a, b) => b.path
-              .split('/')
-              .last
-              .toLowerCase()
-              .compareTo(a.path.split('/').last.toLowerCase()));
+          list.sort(
+            (a, b) => b.path
+                .split('/')
+                .last
+                .toLowerCase()
+                .compareTo(a.path.split('/').last.toLowerCase()),
+          );
           break;
         case SortOption.dateAsc:
           list.sort(
-              (a, b) => a.statSync().modified.compareTo(b.statSync().modified));
+            (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
+          );
           break;
         case SortOption.dateDesc:
           list.sort(
-              (a, b) => b.statSync().modified.compareTo(a.statSync().modified));
+            (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
+          );
           break;
       }
     }
@@ -459,12 +482,13 @@ class _FileManagerState extends State<FileManager> {
       onChanged: (SortOption? newValue) {
         setState(() => currentSort = newValue!);
       },
-      items: SortOption.values.map((option) {
-        return DropdownMenuItem<SortOption>(
-          value: option,
-          child: Text(_getSortOptionText(option)),
-        );
-      }).toList(),
+      items:
+          SortOption.values.map((option) {
+            return DropdownMenuItem<SortOption>(
+              value: option,
+              child: Text(_getSortOptionText(option)),
+            );
+          }).toList(),
     );
   }
 
@@ -498,24 +522,30 @@ class _FileManagerState extends State<FileManager> {
     try {
       if (filters['صور']!.contains(ext)) {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => ImageViewer(filePath: file.path)));
+          context,
+          MaterialPageRoute(builder: (_) => ImageViewer(filePath: file.path)),
+        );
       } else if (filters['صوت']!.contains(ext)) {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => AudioPlayerScreen(filePath: file.path)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => AudioPlayerScreen(filePath: file.path),
+          ),
+        );
       } else if (filters['فيديو']!.contains(ext)) {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => VideoPlayerScreen(filePath: file.path)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => VideoPlayerScreen(filePath: file.path),
+          ),
+        );
       } else if (ext == 'pdf') {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (_) => PDFViewerScreen(filePath: file.path)));
+          context,
+          MaterialPageRoute(
+            builder: (_) => PDFViewerScreen(filePath: file.path),
+          ),
+        );
       } else {
         throw Exception('Unsupported file type');
       }
@@ -532,10 +562,7 @@ class _FileManagerState extends State<FileManager> {
     return Scaffold(
       appBar: null,
       body: Column(
-        children: [
-          _buildFilterRow(),
-          Expanded(child: _buildFileList()),
-        ],
+        children: [_buildFilterRow(), Expanded(child: _buildFileList())],
       ),
     );
   }
@@ -545,18 +572,22 @@ class _FileManagerState extends State<FileManager> {
       height: 50,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        children: filters.keys
-            .map((key) => Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: FilterChip(
-                    label: Text(key),
-                    selected: selectedFilter == key,
-                    onSelected: (v) =>
-                        setState(() => selectedFilter = v ? key : 'الكل'),
-                    selectedColor: Colors.blue[100],
+        children:
+            filters.keys
+                .map(
+                  (key) => Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: FilterChip(
+                      label: Text(key),
+                      selected: selectedFilter == key,
+                      onSelected:
+                          (v) =>
+                              setState(() => selectedFilter = v ? key : 'الكل'),
+                      selectedColor: Colors.blue[100],
+                    ),
                   ),
-                ))
-            .toList(),
+                )
+                .toList(),
       ),
     );
   }
@@ -579,13 +610,16 @@ class _FileManagerState extends State<FileManager> {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          subtitle: isDir
-              ? Text('مجلد')
-              : Text(_formatFileSize(File(file.path).lengthSync())),
+          subtitle:
+              isDir
+                  ? Text('مجلد')
+                  : Text(_formatFileSize(File(file.path).lengthSync())),
           trailing: isDir ? null : _fileActions(file),
-          onTap: () => isDir
-              ? _navigateToDirectory(Directory(file.path))
-              : openFile(file),
+          onTap:
+              () =>
+                  isDir
+                      ? _navigateToDirectory(Directory(file.path))
+                      : openFile(file),
         );
       },
     );
@@ -686,7 +720,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   bool _showPip = false;
   Offset _pipPosition = Offset(20, 20);
   double _pipSize = 200;
-// Add this global variable at the top of your file
+  // Add this global variable at the top of your file
   bool _globalPipActive = false;
   Offset _globalPipPosition = Offset(20, 20);
   double _globalPipSize = 300; // Increased from 200 to 300
@@ -701,7 +735,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     setState(() => _globalPipActive = !_globalPipActive);
   }
 
-// Add these handler methods
+  // Add these handler methods
   void _toggleFullScreenFromPip() {
     setState(() {
       _globalPipActive = false;
@@ -714,26 +748,30 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     final session = await AudioSession.instance;
 
     if (Platform.isAndroid) {
-      await session.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions:
-            AVAudioSessionCategoryOptions.allowBluetooth,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-        androidAudioAttributes: AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.music,
-          flags: AndroidAudioFlags.none,
-          usage: AndroidAudioUsage.media,
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.allowBluetooth,
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+          androidAudioAttributes: AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.music,
+            flags: AndroidAudioFlags.none,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
+          androidWillPauseWhenDucked: true,
         ),
-        androidAudioFocusGainType: AndroidAudioFocusGainType.gain,
-        androidWillPauseWhenDucked: true,
-      ));
+      );
     } else if (Platform.isIOS) {
-      await session.configure(const AudioSessionConfiguration(
-        avAudioSessionCategory: AVAudioSessionCategory.playback,
-        avAudioSessionCategoryOptions:
-            AVAudioSessionCategoryOptions.allowBluetooth,
-        avAudioSessionMode: AVAudioSessionMode.defaultMode,
-      ));
+      await session.configure(
+        const AudioSessionConfiguration(
+          avAudioSessionCategory: AVAudioSessionCategory.playback,
+          avAudioSessionCategoryOptions:
+              AVAudioSessionCategoryOptions.allowBluetooth,
+          avAudioSessionMode: AVAudioSessionMode.defaultMode,
+        ),
+      );
     }
   }
 
@@ -752,11 +790,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             color: Colors.black,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 8,
-                spreadRadius: 2,
-              )
+              BoxShadow(color: Colors.black26, blurRadius: 8, spreadRadius: 2),
             ],
           ),
           child: ClipRRect(
@@ -838,20 +872,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
             color: Colors.black,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black38,
-                blurRadius: 12,
-                spreadRadius: 4,
-              )
+              BoxShadow(color: Colors.black38, blurRadius: 12, spreadRadius: 4),
             ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
             child: Stack(
-              children: [
-                VideoPlayer(_controller),
-                _buildPipControls(),
-              ],
+              children: [VideoPlayer(_controller), _buildPipControls()],
             ),
           ),
         ),
@@ -859,7 +886,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     );
   }
 
-// Separate control building
+  // Separate control building
   Widget _buildPipControls() {
     return Positioned.fill(
       child: Column(
@@ -967,9 +994,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
     _volumeSubscription = _volumeController.addListener((volume) {
       setState(() => _initialVolume = volume);
     }, fetchInitialVolume: true);
-    _volumeController
-        .isMuted()
-        .then((isMuted) => setState(() => _isMuted = isMuted));
+    _volumeController.isMuted().then(
+      (isMuted) => setState(() => _isMuted = isMuted),
+    );
   }
 
   void _handleVerticalDragStart(DragStartDetails details) async {
@@ -1070,35 +1097,38 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
       // Add this line to load the first frame immediately
       await _controller.setLooping(false);
 
-      _controller.initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _isInitialized = true;
-            // Auto-play when initialized
-            _controller.play();
-            _isPlaying = true;
-          });
+      _controller
+          .initialize()
+          .then((_) {
+            if (mounted) {
+              setState(() {
+                _isInitialized = true;
+                // Auto-play when initialized
+                _controller.play();
+                _isPlaying = true;
+              });
 
-          // Start the controls auto-hide timer
-          _controlsTimer = Timer(const Duration(seconds: 3), () {
-            if (mounted) setState(() => _showControls = false);
+              // Start the controls auto-hide timer
+              _controlsTimer = Timer(const Duration(seconds: 3), () {
+                if (mounted) setState(() => _showControls = false);
+              });
+            }
+          })
+          .catchError((error) {
+            print("Video initialization error: $error");
+            if (mounted) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('خطأ في تشغيل الفيديو')));
+              Navigator.of(context).pop();
+            }
           });
-        }
-      }).catchError((error) {
-        print("Video initialization error: $error");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('خطأ في تشغيل الفيديو')),
-          );
-          Navigator.of(context).pop();
-        }
-      });
     } catch (e) {
       print("Error creating controller: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('خطأ في تشغيل الفيديو')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('خطأ في تشغيل الفيديو')));
         Navigator.of(context).pop();
       }
     }
@@ -1147,8 +1177,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 _currentVolumeLevel <= 0
                     ? Icons.volume_off
                     : _currentVolumeLevel < 0.5
-                        ? Icons.volume_down
-                        : Icons.volume_up,
+                    ? Icons.volume_down
+                    : Icons.volume_up,
                 color: Colors.white,
                 size: 40,
               ),
@@ -1179,11 +1209,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           ),
           child: Column(
             children: [
-              Icon(
-                Icons.brightness_5,
-                color: Colors.white,
-                size: 40,
-              ),
+              Icon(Icons.brightness_5, color: Colors.white, size: 40),
               SizedBox(height: 8),
               Text(
                 '${(_currentBrightnessLevel * 100).round()}%',
@@ -1250,8 +1276,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   void _skipBackward() {
     final currentPosition = _controller.value.position;
     final newPosition = currentPosition - const Duration(seconds: 10);
-    _controller
-        .seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
+    _controller.seekTo(
+      newPosition < Duration.zero ? Duration.zero : newPosition,
+    );
   }
 
   void _toggleFullScreen() {
@@ -1292,10 +1319,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 leading: IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: Colors.white,
-                  ),
+                  icon: Icon(Icons.arrow_back, color: Colors.white),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 actions: [
@@ -1312,43 +1336,51 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                         onPressed: _toggleFullScreen,
                       ),
                       IconButton(
-                          icon: const Icon(Icons.picture_in_picture),
-                          onPressed: _togglePip,
-                          color: Colors.white),
+                        icon: const Icon(Icons.picture_in_picture),
+                        onPressed: _togglePip,
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
             Center(
-                child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.replay_10,
-                          size: 40, color: Colors.white),
-                      onPressed: _skipBackward,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
-                        size: 50,
-                        color: Colors.white,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.replay_10,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        onPressed: _skipBackward,
                       ),
-                      onPressed: _togglePlayPause,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.forward_10,
-                          size: 40, color: Colors.white),
-                      onPressed: _skipForward,
-                    ),
-                  ],
-                ),
-              ],
-            )),
+                      IconButton(
+                        icon: Icon(
+                          _isPlaying ? Icons.pause : Icons.play_arrow,
+                          size: 50,
+                          color: Colors.white,
+                        ),
+                        onPressed: _togglePlayPause,
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.forward_10,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        onPressed: _skipForward,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             Positioned(
               bottom: 0,
               left: 0,
@@ -1408,18 +1440,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
           return;
         }
 
-        final status = await floating.enable(Float.ImmediatePiP(
-          aspectRatio: Float.Rational(
-            _controller.value.size.width.toInt(),
-            _controller.value.size.height.toInt(),
+        final status = await floating.enable(
+          Float.ImmediatePiP(
+            aspectRatio: Float.Rational(
+              _controller.value.size.width.toInt(),
+              _controller.value.size.height.toInt(),
+            ),
+            sourceRectHint: Rectangle<int>(
+              0,
+              0,
+              _controller.value.size.width.toInt(),
+              _controller.value.size.height.toInt(),
+            ),
           ),
-          sourceRectHint: Rectangle<int>(
-            0,
-            0,
-            _controller.value.size.width.toInt(),
-            _controller.value.size.height.toInt(),
-          ),
-        ));
+        );
 
         if (status == Float.PiPStatus.enabled) {
           setState(() => _globalPipActive = true);
@@ -1483,9 +1517,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
         //         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('PiP error: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('PiP error: ${e.toString()}')));
     }
   }
 
@@ -1516,12 +1550,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return Scaffold(
-        appBar: AppBar(
-          title: const Text('Video Player'),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        appBar: AppBar(title: const Text('Video Player')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -1543,23 +1573,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen>
                 onVerticalDragStart: _handleVerticalDragStart,
                 onVerticalDragUpdate: _handleVerticalDragUpdate,
                 onVerticalDragEnd: _handleVerticalDragEnd,
-                child: _isFullScreen
-                    ? SizedBox.expand(
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: SizedBox(
-                            width: _controller.value.size.width,
-                            height: _controller.value.size.height,
+                child:
+                    _isFullScreen
+                        ? SizedBox.expand(
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            child: SizedBox(
+                              width: _controller.value.size.width,
+                              height: _controller.value.size.height,
+                              child: VideoPlayer(_controller),
+                            ),
+                          ),
+                        )
+                        : Center(
+                          child: AspectRatio(
+                            aspectRatio: _controller.value.aspectRatio,
                             child: VideoPlayer(_controller),
                           ),
                         ),
-                      )
-                    : Center(
-                        child: AspectRatio(
-                          aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller),
-                        ),
-                      ),
               ),
             // PiP Overlay (shown when active)
             if (_globalPipActive) _buildGlobalPipOverlay(),
@@ -1584,9 +1615,7 @@ class PipOverlay extends StatelessWidget {
       home: Scaffold(
         body: GestureDetector(
           onTap: () => FlutterOverlayWindow.closeOverlay(),
-          child: const Center(
-            child: Text('PiP Overlay Content'),
-          ),
+          child: const Center(child: Text('PiP Overlay Content')),
         ),
       ),
     );
@@ -1689,8 +1718,9 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
                   icon: Icon(_isLooping ? Icons.repeat_one : Icons.repeat),
                   onPressed: () {
                     setState(() => _isLooping = !_isLooping);
-                    _player
-                        .setLoopMode(_isLooping ? LoopMode.one : LoopMode.off);
+                    _player.setLoopMode(
+                      _isLooping ? LoopMode.one : LoopMode.off,
+                    );
                   },
                 ),
               ],
@@ -1724,9 +1754,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
           builder: (context, snapshot) {
             final duration = snapshot.data ?? Duration.zero;
             return Slider(
-              value: position.inMilliseconds
-                  .toDouble()
-                  .clamp(0, duration.inMilliseconds.toDouble()),
+              value: position.inMilliseconds.toDouble().clamp(
+                0,
+                duration.inMilliseconds.toDouble(),
+              ),
               max: duration.inMilliseconds.toDouble(),
               onChanged: (value) {
                 _player.seek(Duration(milliseconds: value.toInt()));
@@ -1771,12 +1802,15 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
           ),
         IconButton(
           icon: Icon(Icons.replay_10, size: 40),
-          onPressed: () => _player.seek(
-            Duration(
-                seconds: (_player.position.inSeconds - 10)
-                    .clamp(0, double.infinity)
-                    .toInt()),
-          ),
+          onPressed:
+              () => _player.seek(
+                Duration(
+                  seconds:
+                      (_player.position.inSeconds - 10)
+                          .clamp(0, double.infinity)
+                          .toInt(),
+                ),
+              ),
         ),
         IconButton(
           icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 50),
@@ -1790,9 +1824,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
         ),
         IconButton(
           icon: Icon(Icons.forward_10, size: 40),
-          onPressed: () => _player.seek(
-            Duration(seconds: _player.position.inSeconds + 10),
-          ),
+          onPressed:
+              () => _player.seek(
+                Duration(seconds: _player.position.inSeconds + 10),
+              ),
         ),
         if (widget.nextFilePath != null)
           IconButton(
@@ -1824,12 +1859,10 @@ class _AudioPlayerScreenState extends State<AudioPlayerScreen> {
   Widget _buildSpeedControl() {
     return DropdownButton<double>(
       value: _speed,
-      items: [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
-        return DropdownMenuItem(
-          value: speed,
-          child: Text('${speed}x'),
-        );
-      }).toList(),
+      items:
+          [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((speed) {
+            return DropdownMenuItem(value: speed, child: Text('${speed}x'));
+          }).toList(),
       onChanged: (value) {
         if (value != null) {
           setState(() => _speed = value);
