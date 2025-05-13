@@ -2,7 +2,7 @@ import UIKit
 import Flutter
 import AVKit
 import AVFoundation
-import fl_pip
+// import fl_pip
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {

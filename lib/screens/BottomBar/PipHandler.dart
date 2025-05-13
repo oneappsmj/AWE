@@ -1,24 +1,25 @@
 import 'package:flutter/services.dart';
+import 'dart:io';
 
 class PiPService {
   static const MethodChannel _channel = MethodChannel('pip_channel');
-  
+
   // Event callbacks
   static Function? onPiPStarted;
   static Function? onPiPStopped;
   static Function(String)? onPiPError;
   static Function? onFullscreenRestore;
-  
+
   static bool _isInitialized = false;
 
   /// Initialize the PiP service and set up method call handlers
   static Future<void> initialize() async {
     if (_isInitialized) return;
-    
+
     _channel.setMethodCallHandler(_handleMethodCall);
     _isInitialized = true;
   }
-  
+
   /// Handles method calls from the native platform
   static Future<dynamic> _handleMethodCall(MethodCall call) async {
     switch (call.method) {
@@ -45,7 +46,12 @@ class PiPService {
     if (!_isInitialized) {
       await initialize();
     }
-    
+
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      onPiPError?.call("PiP is only supported on iOS and Android");
+      return false;
+    }
+
     try {
       await _channel.invokeMethod('startPip', {
         'path': filePath,
@@ -61,6 +67,10 @@ class PiPService {
 
   /// Stops Picture-in-Picture mode
   static Future<bool> stopPiP() async {
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      return false;
+    }
+
     try {
       await _channel.invokeMethod('stopPip');
       return true;
@@ -73,6 +83,10 @@ class PiPService {
 
   /// Checks if Picture-in-Picture is supported on this device
   static Future<bool> isPiPSupported() async {
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      return false;
+    }
+
     try {
       return await _channel.invokeMethod('isPipSupported') ?? false;
     } on PlatformException catch (e) {
@@ -80,11 +94,13 @@ class PiPService {
       return false;
     }
   }
-  
-  
-  
+
   /// Gets the current PiP state (if active)
   static Future<bool> isPiPActive() async {
+    if (!Platform.isIOS && !Platform.isAndroid) {
+      return false;
+    }
+
     try {
       final bool? isActive = await _channel.invokeMethod('isPipActive');
       return isActive ?? false;
@@ -93,17 +109,17 @@ class PiPService {
       return false;
     }
   }
-  
+
   /// Disposes resources and removes method handlers
   static void dispose() {
     onPiPStarted = null;
     onPiPStopped = null;
     onPiPError = null;
     onFullscreenRestore = null;
-    
+
     // Cannot directly remove method handler, but we can set it to a no-op function
     _channel.setMethodCallHandler((call) async {});
-    
+
     _isInitialized = false;
   }
 }

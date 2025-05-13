@@ -77,7 +77,7 @@ dependencies:
   photo_manager: ^3.6.4
   platform: ^3.1.6
   crypto: ^3.0.6
-  fl_pip: ^3.2.1
+  # fl_pip: ^3.2.1 # Commented out due to iOS crash issues
   audio_session: ^0.1.25
 
 dev_dependencies:
