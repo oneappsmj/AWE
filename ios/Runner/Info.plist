@@ -46,8 +46,6 @@
     <string>UIInterfaceOrientationLandscapeLeft</string>
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
-  <key>CFBundleIdentifier</key>
-<string>com.example.downloadsplatform.CV8N38BFPJ</string>
 
   <!-- Supported Orientations for iPad -->
   <key>UISupportedInterfaceOrientations~ipad</key>
@@ -74,6 +72,24 @@
 <string>Required for video playback</string>
 <key>NSMicrophoneUsageDescription</key>
 <string>Required for audio playback</string>
+
+<!-- Local Network Permission for iOS 14+ -->
+<key>NSLocalNetworkUsageDescription</key>
+<string>This app needs access to the local network to play videos</string>
+<key>NSBonjourServices</key>
+<array>
+  <string>_http._tcp.</string>
+</array>
+
+<!-- File System Access -->
+<key>UIFileSharingEnabled</key>
+<true/>
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+<key>NSFileManagerUsageDescription</key>
+<string>We need access to your files to play videos and audio</string>
+<key>NSDocumentsFolderUsageDescription</key>
+<string>We need access to your files to play videos and audio</string>
 
 <key>UISupportedInterfaceOrientations</key>
 <array>
