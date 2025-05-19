@@ -21,7 +21,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'firebase_options.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'dart:ui';
@@ -31,12 +30,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FacebookAuth.instance.webAndDesktopInitialize(
-    appId: "1107497114301367",
-    cookie: true,
-    xfbml: true,
-    version: "v15.0",
-  );
+
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
@@ -63,8 +57,6 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-
-
   const MyApp({super.key});
 
   @override
@@ -100,7 +92,7 @@ class _MyAppState extends State<MyApp> {
       ),
       home: Directionality(
         textDirection: TextDirection.rtl,
-        child: LockScreen(child:HomeScreen()),
+        child: LockScreen(child: HomeScreen()),
       ),
       routes: {
         '/onboarding1': (context) => OnboardingScreen1(),
@@ -110,19 +102,15 @@ class _MyAppState extends State<MyApp> {
         '/login': (context) => LoginScreen(),
         '/forgotPassword': (context) => ForgotPasswordScreen(),
         '/verifyPasswordCode': (context) => VerifyPasswordCodeScreen(
-          email: '',
-          type: '',
-        ),
+              email: '',
+              type: '',
+            ),
         '/resetPassword': (context) => ResetPasswordScreen(),
         '/completeProfile': (context) => CompleteProfileScreen(),
         '/welcome': (context) => WelcomeScreen(),
-        '/home': (context) => Directionality(textDirection:TextDirection.rtl,child: HomeScreen()),
-
+        '/home': (context) => Directionality(
+            textDirection: TextDirection.rtl, child: HomeScreen()),
       },
     );
   }
-
-
 }
-
-

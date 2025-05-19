@@ -111,10 +111,6 @@
   <!-- Biometric Authentication -->
   <key>NSFaceIDUsageDescription</key>
   <string>نحتاج إلى المصادقة البيومترية لتأمين التطبيق</string>
-  <key>FacebookAppID</key>
-  <string>1107497114301367</string>
-  <key>FacebookClientToken</key>
-  <string>40d129c1c48f67f19257a722de5c22fe</string>
 
   <key>NSPhotoLibraryAddUsageDescription</key>
   <string>We need access to save files to your library.</string>

@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'VerifyPasswordCodeScreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:downloadsplatform/Models/auth_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -90,25 +89,28 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       }
     }
   }
-  Future<void> _signInWithGoogle() async {
 
+  Future<void> _signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
       setState(() {
         _isLoading = true;
       });
       try {
-        final url = Uri.parse('https://downloadsplatform.com/api/auth/social-login');
+        final url =
+            Uri.parse('https://downloadsplatform.com/api/auth/social-login');
         final response = await http.post(
           url,
           headers: {'Content-Type': 'application/json'},
@@ -122,11 +124,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
         if (response.statusCode == 200) {
           final userData = jsonDecode(response.body);
-          final authProvider = Provider.of<UserProvider>(context, listen: false);
+          final authProvider =
+              Provider.of<UserProvider>(context, listen: false);
           await authProvider.signIn(userData['user']);
           // Save the token to SharedPreferences
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('authToken', userData['token']); // Assuming the token is in the response
+          await prefs.setString('authToken',
+              userData['token']); // Assuming the token is in the response
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('تم التسجيل بنجاح !')),
           );
@@ -158,95 +162,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       );
     }
   }
-
-  Future<void> _signInWithFacebook() async {
-    try {
-      // Print debug information
-      print("Attempting Facebook Login");
-
-      final LoginResult result = await FacebookAuth.instance.login(
-          permissions: ['email', 'public_profile']
-      );
-
-      print("Facebook Login Result: ${result.status}");
-
-      if (result.status == LoginStatus.success) {
-        final AccessToken? accessToken = result.accessToken;
-
-        if (accessToken != null) {
-          final OAuthCredential facebookAuthCredential =
-          FacebookAuthProvider.credential(accessToken.tokenString);
-
-          final UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(facebookAuthCredential);
-          setState(() {
-            _isLoading = true;
-          });
-          try {
-            final url = Uri.parse('https://downloadsplatform.com/api/auth/social-login');
-            final response = await http.post(
-              url,
-              headers: {'Content-Type': 'application/json'},
-              body: jsonEncode({
-                'email': userCredential.user!.email,
-                'firstName': userCredential.user!.displayName?.split(" ")[0],
-                'lastName': userCredential.user!.displayName?.split(" ")[1],
-              }),
-            );
-            print(response.body);
-
-            if (response.statusCode == 200) {
-              final userData = jsonDecode(response.body);
-              final authProvider = Provider.of<UserProvider>(context, listen: false);
-              await authProvider.signIn(userData['user']);
-              // Save the token to SharedPreferences
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('authToken', userData['token']); // Assuming the token is in the response
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('تم التسجيل بنجاح !')),
-              );
-
-              Navigator.pushReplacementNamed(context, '/welcome');
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('فشل تسجيل الدخول '),
-                ),
-              );
-            }
-          } catch (e) {
-            print("Error signing in: $e");
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('حدث خطأ أثناء الاتصال بالخادم')),
-            );
-          } finally {
-            setState(() {
-              _isLoading = false;
-            });
-          }
-
-          print("User signed in with Facebook: ${userCredential.user}");
-          Navigator.pushReplacementNamed(context, '/welcome');
-        } else {
-          print("Facebook access token is null");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('فشل الحصول على رمز الوصول')),
-          );
-        }
-      } else {
-        print("Facebook login failed: ${result.status}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('فشل تسجيل الدخول باستخدام Facebook')),
-        );
-      }
-    } catch (e) {
-      print("Detailed Facebook Login Error: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تسجيل الدخول باستخدام Facebook ')),
-      );
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
@@ -438,18 +353,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Facebook Icon
-                    IconButton(
-                      icon: Icon(Icons.facebook, color: Colors.blue),
-                      onPressed: _signInWithFacebook,
-                    ),
                     // Google Icon
                     IconButton(
                       icon: Icon(Icons.g_mobiledata_rounded, color: Colors.red),
                       onPressed: _signInWithGoogle,
                     ),
-                    // Apple Icon
-
                   ],
                 ),
                 SizedBox(height: 10),
