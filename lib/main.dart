@@ -27,24 +27,48 @@ import 'dart:ui';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
+  // Set up global error handlers for all Flutter errors
   FlutterError.onError = (errorDetails) {
     FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
   };
+
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
 
-  final prefs = await SharedPreferences.getInstance();
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e, stack) {
+    // Log Firebase initialization errors but don't crash
+    print("Firebase initialization error: $e");
+    FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
+  }
+
+  // Initialize SharedPreferences and auth provider in try-catch blocks
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance();
+  } catch (e, stack) {
+    print("SharedPreferences initialization error: $e");
+    FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
+  }
+
   final authProvider = UserProvider();
-  await authProvider.loadUserData();
+  try {
+    await authProvider.loadUserData();
+  } catch (e, stack) {
+    print("User data loading error: $e");
+    FirebaseCrashlytics.instance.recordError(e, stack, fatal: false);
+  }
+
   final tracker = AppLifecycleTracker();
   WidgetsBinding.instance.addObserver(tracker);
+
   runApp(
     MultiProvider(
       providers: [
@@ -87,7 +111,8 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromRGBO(58, 93, 248, 1)),
+          seedColor: const Color.fromRGBO(58, 93, 248, 1),
+        ),
         useMaterial3: true,
       ),
       home: Directionality(
@@ -101,15 +126,16 @@ class _MyAppState extends State<MyApp> {
         '/createAccount': (context) => CreateAccountScreen(),
         '/login': (context) => LoginScreen(),
         '/forgotPassword': (context) => ForgotPasswordScreen(),
-        '/verifyPasswordCode': (context) => VerifyPasswordCodeScreen(
-              email: '',
-              type: '',
-            ),
+        '/verifyPasswordCode':
+            (context) => VerifyPasswordCodeScreen(email: '', type: ''),
         '/resetPassword': (context) => ResetPasswordScreen(),
         '/completeProfile': (context) => CompleteProfileScreen(),
         '/welcome': (context) => WelcomeScreen(),
-        '/home': (context) => Directionality(
-            textDirection: TextDirection.rtl, child: HomeScreen()),
+        '/home':
+            (context) => Directionality(
+              textDirection: TextDirection.rtl,
+              child: HomeScreen(),
+            ),
       },
     );
   }

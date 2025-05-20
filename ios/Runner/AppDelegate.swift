@@ -24,7 +24,14 @@ import AVFoundation
         setupThumbnailChannel(controller: controller)
         setupPipChannel(controller: controller)
         
-        GeneratedPluginRegistrant.register(with: self)
+        // Use try-catch to safely initialize plugins in case of errors
+        do {
+            GeneratedPluginRegistrant.register(with: self)
+        } catch {
+            print("Failed to register plugins: \(error)")
+            // If a plugin fails to register, continue with the application startup
+        }
+        
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     
