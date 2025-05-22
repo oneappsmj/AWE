@@ -16,13 +16,27 @@ import AVFoundation
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        configureAudioSession()
+        // Configure audio session safely
+        do {
+            try configureAudioSession()
+        } catch {
+            print("Failed to configure audio session: \(error.localizedDescription)")
+        }
         
         let controller = window?.rootViewController as! FlutterViewController
         
-        // Initialize both channels
-        setupThumbnailChannel(controller: controller)
-        setupPipChannel(controller: controller)
+        // Initialize both channels with try-catch blocks for error handling
+        do {
+            setupThumbnailChannel(controller: controller)
+        } catch {
+            print("Failed to setup thumbnail channel: \(error)")
+        }
+        
+        do {
+            setupPipChannel(controller: controller)
+        } catch {
+            print("Failed to setup PIP channel: \(error)")
+        }
         
         // Use try-catch to safely initialize plugins in case of errors
         do {
@@ -37,11 +51,19 @@ import AVFoundation
     
     // MARK: - Application Lifecycle
     override func applicationWillEnterForeground(_ application: UIApplication) {
-        handleForegroundTransition()
+        do {
+            try handleForegroundTransition()
+        } catch {
+            print("Error in foreground transition: \(error)")
+        }
     }
     
     override func applicationDidEnterBackground(_ application: UIApplication) {
-        handleBackgroundTransition()
+        do {
+            try handleBackgroundTransition()
+        } catch {
+            print("Error in background transition: \(error)")
+        }
     }
     
     override func applicationWillTerminate(_ application: UIApplication) {
@@ -50,7 +72,14 @@ import AVFoundation
     
     // MARK: - PIP Functionality
     private func handleStartPip(filePath: String, position: Double, result: @escaping FlutterResult) {
+        // Cleanup existing PiP resources first
         cleanupPiPResources()
+        
+        // Check if PiP is supported on this device
+        guard AVPictureInPictureController.isPictureInPictureSupported() else {
+            result(FlutterError(code: "PIP_NOT_SUPPORTED", message: "Picture in Picture is not supported on this device", details: nil))
+            return
+        }
         
         // Check if file exists
         let fileManager = FileManager.default
@@ -60,14 +89,18 @@ import AVFoundation
         }
         
         let url = URL(fileURLWithPath: filePath)
-        pipPlayer = AVPlayer(url: url)
         
-        // Check if the media can be played
+        // Create asset to validate the media before playing
         let asset = AVAsset(url: url)
         let playableKey = "playable"
         
         asset.loadValuesAsynchronously(forKeys: [playableKey]) { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else { 
+                DispatchQueue.main.async {
+                    result(FlutterError(code: "INSTANCE_GONE", message: "AppDelegate instance no longer available", details: nil))
+                }
+                return 
+            }
             
             var error: NSError? = nil
             let status = asset.statusOfValue(forKey: playableKey, error: &error)
@@ -80,23 +113,37 @@ import AVFoundation
                     return
                 }
                 
-                self.configureAudioSessionForPlayback()
+                do {
+                    try self.configureAudioSessionForPlayback()
+                } catch {
+                    print("Audio session config error: \(error)")
+                    // Continue despite audio session error
+                }
+                
+                // Only create player after asset validation
+                self.pipPlayer = AVPlayer(url: url)
                 
                 if position > 0 {
                     let cmTime = CMTime(seconds: position / 1000.0, preferredTimescale: 1000)
                     self.pipPlayer?.seek(to: cmTime)
                 }
                 
-                self.setupPlayerViewController()
-                self.setupPictureInPicture(result: result)
-                
-                self.pipPlayer?.play()
+                do {
+                    try self.setupPlayerViewController()
+                    self.setupPictureInPicture(result: result)
+                    self.pipPlayer?.play()
+                } catch {
+                    result(FlutterError(code: "PIP_SETUP_ERROR", message: "Error setting up PiP: \(error.localizedDescription)", details: nil))
+                    self.cleanupPiPResources()
+                }
             }
         }
     }
     
     private func handleStopPip(result: @escaping FlutterResult) {
-        pipController?.stopPictureInPicture()
+        if pipController?.isPictureInPictureActive == true {
+            pipController?.stopPictureInPicture()
+        }
         cleanupPiPResources()
         result(nil)
     }
@@ -144,24 +191,16 @@ import AVFoundation
     }
     
     // MARK: - Configuration Methods
-    private func configureAudioSession() {
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Audio session configuration failed: \(error.localizedDescription)")
-        }
+    private func configureAudioSession() throws {
+        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        try AVAudioSession.sharedInstance().setActive(true)
     }
     
-    private func configureAudioSessionForPlayback() {
-        do {
-            try AVAudioSession.sharedInstance().setCategory(.playback,
-                                                          mode: .moviePlayback,
-                                                          options: [.allowAirPlay, .allowBluetooth])
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Playback audio session error: \(error)")
-        }
+    private func configureAudioSessionForPlayback() throws {
+        try AVAudioSession.sharedInstance().setCategory(.playback,
+                                                      mode: .moviePlayback,
+                                                      options: [.allowAirPlay, .allowBluetooth])
+        try AVAudioSession.sharedInstance().setActive(true)
     }
     
     private func setupThumbnailChannel(controller: FlutterViewController) {
@@ -171,6 +210,11 @@ import AVFoundation
         )
         
         thumbnailChannel.setMethodCallHandler { [weak self] (call, result) in
+            guard let self = self else {
+                result(FlutterError(code: "UNAVAILABLE", message: "Thumbnail channel unavailable", details: nil))
+                return
+            }
+            
             guard call.method == "generateThumbnail",
                   let args = call.arguments as? [String: Any],
                   let videoPath = args["videoPath"] as? String,
@@ -181,7 +225,7 @@ import AVFoundation
                 return
             }
             
-            self?.generateThumbnail(
+            self.generateThumbnail(
                 videoPath: videoPath,
                 thumbnailPath: thumbnailPath,
                 maxWidth: maxWidth,
@@ -198,17 +242,22 @@ import AVFoundation
         )
         
         pipChannel?.setMethodCallHandler { [weak self] (call, result) in
+            guard let self = self else {
+                result(FlutterError(code: "UNAVAILABLE", message: "PiP channel unavailable", details: nil))
+                return
+            }
+            
             switch call.method {
             case "startPip":
                guard let args = call.arguments as? [String: Any],
                   let path = args["path"] as? String,
                   let position = args["position"] as? Double else {
-                result(FlutterError(code: "INVALID_ARGS", message: "Invalid arguments", details: nil))
+                result(FlutterError(code: "INVALID_ARGS", message: "Invalid arguments for startPip", details: nil))
                 return
             }
-            self?.handleStartPip(filePath: path, position: position, result: result)
+            self.handleStartPip(filePath: path, position: position, result: result)
             case "stopPip":
-                self?.handleStopPip(result: result)
+                self.handleStopPip(result: result)
             case "isPipSupported":
                  let isSupported = AVPictureInPictureController.isPictureInPictureSupported()
                  result(isSupported)
@@ -219,17 +268,28 @@ import AVFoundation
     }
     
     // MARK: - PIP Helper Methods
-    private func setupPlayerViewController() {
+    private func setupPlayerViewController() throws {
         playerViewController = AVPlayerViewController()
-        playerViewController?.player = pipPlayer
-        playerViewController?.allowsPictureInPicturePlayback = true
-        playerViewController?.showsPlaybackControls = false
+        guard let playerVC = playerViewController else {
+            throw NSError(domain: "com.downloadsplatform", code: 1001, 
+                        userInfo: [NSLocalizedDescriptionKey: "Failed to create AVPlayerViewController"])
+        }
+        
+        playerVC.player = pipPlayer
+        playerVC.allowsPictureInPicturePlayback = true
+        playerVC.showsPlaybackControls = false
 
         // Use full screen layout initially
-        playerViewController?.view.frame = UIScreen.main.bounds
-        window?.rootViewController?.view.addSubview(playerViewController!.view)
-        window?.rootViewController?.addChild(playerViewController!)
-        playerViewController?.didMove(toParent: window?.rootViewController)
+        playerVC.view.frame = UIScreen.main.bounds
+        
+        guard let rootVC = window?.rootViewController else {
+            throw NSError(domain: "com.downloadsplatform", code: 1002, 
+                        userInfo: [NSLocalizedDescriptionKey: "Root view controller not available"])
+        }
+        
+        rootVC.view.addSubview(playerVC.view)
+        rootVC.addChild(playerVC)
+        playerVC.didMove(toParent: rootVC)
     }
     
     private func setupPictureInPicture(result: @escaping FlutterResult) {
@@ -237,44 +297,70 @@ import AVFoundation
         pipSetupWorkItem?.cancel()
         
         let workItem = DispatchWorkItem { [weak self] in
-            guard let self = self,
-                  let playerViewController = self.playerViewController,
-                  let playerLayer = playerViewController.playerView?.layer as? AVPlayerLayer,
-                  AVPictureInPictureController.isPictureInPictureSupported() else {
-                result(FlutterError(code: "PIP_ERROR", message: "PiP setup failed - layer not ready or unsupported", details: nil))
-                self?.cleanupPiPResources()
+            guard let self = self else {
+                result(FlutterError(code: "INSTANCE_GONE", message: "AppDelegate instance no longer available", details: nil))
                 return
             }
             
-            self.pipController = AVPictureInPictureController(playerLayer: playerLayer)
-            self.pipController?.delegate = self
-            
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(self.handleBackgroundTransition),
-                name: UIApplication.didEnterBackgroundNotification,
-                object: nil
-            )
-            
-            NotificationCenter.default.addObserver(
-                self,
-                selector: #selector(self.handleForegroundTransition),
-                name: UIApplication.willEnterForegroundNotification,
-                object: nil
-            )
-            
-            // Start PiP immediately if supported
-            guard let pipController = self.pipController else {
-                result(FlutterError(code: "PIP_ERROR", message: "PiP not supported", details: nil))
+            guard let playerViewController = self.playerViewController else {
+                result(FlutterError(code: "PIP_ERROR", message: "Player view controller not available", details: nil))
                 self.cleanupPiPResources()
                 return
             }
             
-            if pipController.isPictureInPicturePossible {
-                pipController.startPictureInPicture()
-                result(nil)
+            // Find AVPlayerLayer using safe unwrapping
+            guard let playerLayer = playerViewController.playerView?.layer as? AVPlayerLayer else {
+                result(FlutterError(code: "PIP_ERROR", message: "Player layer not available", details: nil))
+                self.cleanupPiPResources()
+                return
+            }
+            
+            guard AVPictureInPictureController.isPictureInPictureSupported() else {
+                result(FlutterError(code: "PIP_ERROR", message: "Picture in Picture not supported on this device", details: nil))
+                self.cleanupPiPResources()
+                return
+            }
+            
+            // Create PiP controller with safely unwrapped player layer
+            self.pipController = AVPictureInPictureController(playerLayer: playerLayer)
+            self.pipController?.delegate = self
+            
+            // Add observer only if controller initialized successfully
+            if self.pipController != nil {
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleBackgroundTransition),
+                    name: UIApplication.didEnterBackgroundNotification,
+                    object: nil
+                )
+                
+                NotificationCenter.default.addObserver(
+                    self,
+                    selector: #selector(self.handleForegroundTransition),
+                    name: UIApplication.willEnterForegroundNotification,
+                    object: nil
+                )
+                
+                // Start PiP with additional error handling
+                guard let pipController = self.pipController else {
+                    result(FlutterError(code: "PIP_ERROR", message: "PiP controller not initialized", details: nil))
+                    self.cleanupPiPResources()
+                    return
+                }
+                
+                if pipController.isPictureInPicturePossible {
+                    if #available(iOS 14.2, *) {
+                        // Use canStartPictureInPictureAutomaticallyFromInline for iOS 14.2+
+                        pipController.canStartPictureInPictureAutomaticallyFromInline = true
+                    }
+                    pipController.startPictureInPicture()
+                    result(nil)
+                } else {
+                    result(FlutterError(code: "PIP_ERROR", message: "PiP not possible at this moment", details: nil))
+                    self.cleanupPiPResources()
+                }
             } else {
-                result(FlutterError(code: "PIP_ERROR", message: "PiP not possible", details: nil))
+                result(FlutterError(code: "PIP_ERROR", message: "Failed to initialize PiP controller", details: nil))
                 self.cleanupPiPResources()
             }
         }
@@ -293,9 +379,11 @@ import AVFoundation
     }
     
     private func cleanupPiPResources() {
+        // Cancel any pending work items
         pipSetupWorkItem?.cancel()
         pipSetupWorkItem = nil
         
+        // Remove notification observers
         NotificationCenter.default.removeObserver(self, 
             name: UIApplication.didEnterBackgroundNotification, 
             object: nil
@@ -305,24 +393,32 @@ import AVFoundation
             object: nil
         )
         
+        // Safely stop playback
         pipPlayer?.pause()
         pipPlayer = nil
         
+        // Safely stop PiP if active
         if pipController?.isPictureInPictureActive == true {
             pipController?.stopPictureInPicture()
         }
         pipController = nil
         
-        playerViewController?.willMove(toParent: nil)
-        playerViewController?.view.removeFromSuperview()
-        playerViewController?.removeFromParent()
+        // Clean up player view controller
+        if let playerVC = playerViewController {
+            playerVC.willMove(toParent: nil)
+            playerVC.view.removeFromSuperview()
+            playerVC.removeFromParent()
+        }
         playerViewController = nil
     }
     
     // MARK: - Lifecycle Handlers
-    @objc private func handleBackgroundTransition() {
-        if pipPlayer != nil && pipController != nil && !pipController!.isPictureInPictureActive {
-            pipController?.startPictureInPicture()
+    @objc private func handleBackgroundTransition() throws {
+        if let player = pipPlayer, 
+           let controller = pipController, 
+           !controller.isPictureInPictureActive,
+           controller.isPictureInPicturePossible {
+            controller.startPictureInPicture()
         }
         
         var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
@@ -332,17 +428,9 @@ import AVFoundation
         }
     }
     
-    @objc private func handleForegroundTransition() {
+    @objc private func handleForegroundTransition() throws {
         if pipController?.isPictureInPictureActive == true {
             pipController?.stopPictureInPicture()
-        }
-    }
-    
-    private func handleAppTermination() {
-        if pipPlayer != nil && pipController != nil {
-            if !pipController!.isPictureInPictureActive {
-                pipController?.startPictureInPicture()
-            }
         }
     }
     
@@ -389,6 +477,7 @@ extension AppDelegate: AVPictureInPictureControllerDelegate {
 
 extension AVPlayerViewController {
     var playerView: UIView? {
+        // Safely find the player view
         return self.view.subviews.first(where: { $0.layer is AVPlayerLayer })
     }
 }

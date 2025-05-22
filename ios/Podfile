@@ -40,10 +40,26 @@ post_install do |installer|
     flutter_additional_ios_build_settings(target)
     
     target.build_configurations.each do |config|
+      # Enable AVKit framework
+      config.build_settings['ENABLE_BITCODE'] = 'NO'
+      
+      # Fix iOS 15+ issues
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      
+      # Fix compatibility with iPadOS 18.5
+      config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
+      
+      # Avoid microphone usage (causes permission issues)
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
         'AUDIO_SESSION_MICROPHONE=0'
       ]
+      
+      # Add Swift optimization settings to improve stability
+      if config.name == 'Release'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
+        config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
+      end
     end
   end
 end

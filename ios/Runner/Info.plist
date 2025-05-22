@@ -25,24 +25,27 @@
   <key>LSRequiresIPhoneOS</key>
   <true/>
 
-<key>method</key>
-    <string>app-store</string>
-    <key>teamID</key>
-    <string>CV8N38BFPJ</string> <!-- Get from Apple Developer Portal -->
-    <key>uploadBitcode</key>
-    <false/>
-    <key>uploadSymbols</key>
-    <true/>
+  <!-- Export Options -->
+  <key>method</key>
+  <string>app-store</string>
+  <key>teamID</key>
+  <string>CV8N38BFPJ</string> <!-- Get from Apple Developer Portal -->
+  <key>uploadBitcode</key>
+  <false/>
+  <key>uploadSymbols</key>
+  <true/>
 
   <!-- Launch Screen Configuration -->
   <key>UILaunchStoryboardName</key>
   <string>LaunchScreen</string>
   <key>UIMainStoryboardFile</key>
   <string>Main</string>
-  <!-- Supported Orientations for iPhone -->
+
+  <!-- Supported Orientations -->
   <key>UISupportedInterfaceOrientations</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
     <string>UIInterfaceOrientationLandscapeLeft</string>
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
@@ -51,76 +54,51 @@
   <key>UISupportedInterfaceOrientations~ipad</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
-    
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
     <string>UIInterfaceOrientationLandscapeLeft</string>
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
 
-  <!-- Photo Library Access -->
+  <!-- Media Access Permissions -->
   <key>NSPhotoLibraryUsageDescription</key>
   <string>This app needs access to your photo library to save files</string>
-  <key>AVKitPictureInPictureSupported</key>
-<true/>
+  <key>NSPhotoLibraryAddUsageDescription</key>
+  <string>We need access to save files to your library.</string>
+  <key>NSAppleMusicUsageDescription</key>
+  <string>We need access to save media files.</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Required for video playback</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Required for audio playback</string>
+
+  <!-- Network Configuration -->
   <key>NSAppTransportSecurity</key>
   <dict>
     <key>NSAllowsArbitraryLoads</key>
     <true/>
   </dict>
-  <key>UIViewControllerBasedStatusBarAppearance</key>
-<false/>
-<key>NSCameraUsageDescription</key>
-<string>Required for video playback</string>
-<key>NSMicrophoneUsageDescription</key>
-<string>Required for audio playback</string>
 
-<!-- Local Network Permission for iOS 14+ -->
-<key>NSLocalNetworkUsageDescription</key>
-<string>This app needs access to the local network to play videos</string>
-<key>NSBonjourServices</key>
-<array>
-  <string>_http._tcp.</string>
-</array>
+  <!-- Local Network Permission for iOS 14+ -->
+  <key>NSLocalNetworkUsageDescription</key>
+  <string>This app needs access to the local network to play videos</string>
+  <key>NSBonjourServices</key>
+  <array>
+    <string>_http._tcp.</string>
+  </array>
 
-<!-- File System Access -->
-<key>UIFileSharingEnabled</key>
-<true/>
-<key>LSSupportsOpeningDocumentsInPlace</key>
-<true/>
-<key>NSFileManagerUsageDescription</key>
-<string>We need access to your files to play videos and audio</string>
-<key>NSDocumentsFolderUsageDescription</key>
-<string>We need access to your files to play videos and audio</string>
-
-<key>UISupportedInterfaceOrientations</key>
-<array>
-  <string>UIInterfaceOrientationPortrait</string>
-  <string>UIInterfaceOrientationPortraitUpsideDown</string>
-  <string>UIInterfaceOrientationLandscapeLeft</string>
-  <string>UIInterfaceOrientationLandscapeRight</string>
-</array>
-
-<key>UISupportedInterfaceOrientations~ipad</key>
-<array>
-  <string>UIInterfaceOrientationPortrait</string>
-  <string>UIInterfaceOrientationPortraitUpsideDown</string>
-  <string>UIInterfaceOrientationLandscapeLeft</string>
-  <string>UIInterfaceOrientationLandscapeRight</string>
-</array>
-
+  <!-- File System Access -->
+  <key>UIFileSharingEnabled</key>
+  <true/>
+  <key>LSSupportsOpeningDocumentsInPlace</key>
+  <true/>
+  <key>NSFileManagerUsageDescription</key>
+  <string>We need access to your files to play videos and audio</string>
+  <key>NSDocumentsFolderUsageDescription</key>
+  <string>We need access to your files to play videos and audio</string>
 
   <!-- Biometric Authentication -->
   <key>NSFaceIDUsageDescription</key>
   <string>نحتاج إلى المصادقة البيومترية لتأمين التطبيق</string>
-
-  <key>NSPhotoLibraryAddUsageDescription</key>
-  <string>We need access to save files to your library.</string>
-  <key>NSAppleMusicUsageDescription</key>
-  <string>We need access to save media files.</string>
-<key>BGTaskSchedulerPermittedIdentifiers</key>
-<array>
-  <string>$(PRODUCT_BUNDLE_IDENTIFIER).background-task</string>
-</array>
-<!-- Enable PiP for iOS -->
 
   <!-- Background Modes -->
   <key>UIBackgroundModes</key>
@@ -128,12 +106,19 @@
     <string>audio</string>
     <string>fetch</string>
     <string>processing</string>
-    
   </array>
+
+  <!-- View Controller -->
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <false/>
 
   <!-- PiP Configuration -->
   <key>UIApplicationSupportsPictureInPicture</key>
   <true/>
+  <key>AVKitPictureInPictureSupported</key>
+  <true/>
+
+  <!-- Audio Session Configuration -->
   <key>AVAudioSessionCategoryOptions</key>
   <array>
     <string>AVAudioSessionCategoryOptionMixWithOthers</string>
@@ -141,17 +126,18 @@
     <string>AVAudioSessionCategoryOptionAllowBluetooth</string>
   </array>
 
+  <!-- Background Task Configuration -->
+  <key>BGTaskSchedulerPermittedIdentifiers</key>
+  <array>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER).background-task</string>
+  </array>
+
   <!-- Notifications -->
   <key>NSUserNotificationCenterUsageDescription</key>
   <string>This app needs to send you notifications</string>
-
-  <!-- iOS 10+ notification settings -->
   <key>UNUserNotificationCenterDelegateClassName</key>
   <string>$(PRODUCT_MODULE_NAME).NotificationDelegate</string>
-   <key>UIFileSharingEnabled</key>
-   <true/>
-   <key>LSSupportsOpeningDocumentsInPlace</key>
-   <true/>
+
   <!-- Other Keys -->
   <key>CADisableMinimumFrameDurationOnPhone</key>
   <true/>
