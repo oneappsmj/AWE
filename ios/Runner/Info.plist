@@ -146,5 +146,9 @@
   <array>
     <string>$(AppIdentifierPrefix)com.example.downloadsplatform</string>
   </array>
+
+  <!-- Add these keys -->
+  <key>UIRequiresFullScreen</key>
+  <true/>
 </dict>
 </plist>
