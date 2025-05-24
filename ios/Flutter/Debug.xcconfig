@@ -1,2 +1,10 @@
-#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
-#include "Generated.xcconfig"
+#include? "Generated.xcconfig"
+#include "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+
+// Simulator only settings - no code signing required
+ONLY_ACTIVE_ARCH = YES;
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = arm64;
+CODE_SIGNING_ALLOWED = NO;
+CODE_SIGNING_REQUIRED = NO;
+CODE_SIGN_IDENTITY = "";
+DEVELOPMENT_TEAM = "";

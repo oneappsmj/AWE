@@ -1,48 +1,69 @@
 workflows:
-  ios-appstore-publish:
-    name: iOS App Store Publish Workflow
+  ios-workflow:
+    name: iOS Workflow
+    instance_type: mac_mini_m1
+    max_build_duration: 60
     environment:
-      vars:
-       
-        APP_STORE_CONNECT_PRIVATE_KEY: "$APPSTORECONNECTPRIVATEKEY"        # From App Store Connect
-        CERTIFICATE_PRIVATE_KEY: "$Downloadsplatform"  # From Codemagic UI
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.example.downloadsplatform.CV8N38BFPJ
-        team_id: "$APPSTORECONNECTTEAMID"  # From Apple Developer Portal (e.g., A1B2C3D4E5)
+        distribution_type: development
+        bundle_identifier: com.example.downloadsplatform
+      vars:
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+      flutter: stable
     scripts:
-      # Set up code signing
-      - keychain initialize
-      - keychain add-certificates
-
-      # Configure Xcode project
-      - xcode-project use-profiles
-      - xcode-project build-ipa --workspace ios/Runner.xcworkspace --scheme Runner
-
-      # Flutter build with versioning
-      - flutter packages pub get
-      - name: Build IPA for App Store
+      - name: Set up code signing
         script: |
-          flutter build ipa \
-            --release \
-            --export-options-plist ios/ExportOptions.plist \
-            --build-number=$CM_BUILD_NUMBER \
-            --build-name=1.0.$CM_BUILD_NUMBER
-
-      # Publish to App Store Connect
-      - app-store-connect publish \
-          --ipa build/ios/ipa/*.ipa \
-          --app-store-version-info "Release 1.0.$CM_BUILD_NUMBER" \
-          --submit-to-app-store
-
+          echo "Setting up code signing..."
+          if [ -z "$CM_CERTIFICATE" ]; then
+            # No certificate, use no-codesign option
+            echo "No certificate found, will build without code signing"
+          else
+            # Use Codemagic's automatic code signing
+            keychain initialize
+            app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_DEVELOPMENT
+            keychain add-certificates
+            xcode-project use-profiles
+          fi
+      - name: Update Podfile for Flutter
+        script: |
+          echo "Updating Podfile..."
+          cd ios
+          echo "platform :ios, '15.0'" > Podfile.tmp
+          cat Podfile >> Podfile.tmp
+          mv Podfile.tmp Podfile
+          # Add configuration for flutter_secure_storage
+          sed -i '' 's/post_install do |installer|/post_install do |installer|\n  installer.pods_project.targets.each do |target|\n    if target.name == "flutter_secure_storage"\n      target.build_configurations.each do |config|\n        config.build_settings["SWIFT_VERSION"] = "5.0"\n        config.build_settings["ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES"] = "YES"\n      end\n    end\n  end/g' Podfile
+      - name: Update iPhone-only configuration
+        script: |
+          echo "Configuring for iPhone only..."
+          cd ios
+          # Update Info.plist
+          /usr/libexec/PlistBuddy -c "Delete :UISupportedInterfaceOrientations~ipad" Runner/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :UIDeviceFamily array" Runner/Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :UIDeviceFamily:0 integer 1" Runner/Info.plist || true
+          # Update project.pbxproj
+          sed -i '' 's/TARGETED_DEVICE_FAMILY = "1,2";/TARGETED_DEVICE_FAMILY = 1;/g' Runner.xcodeproj/project.pbxproj
+      - name: Install Flutter dependencies
+        script: |
+          flutter packages pub get
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      - name: Flutter build iOS
+        script: |
+          if [ -z "$CM_CERTIFICATE" ]; then
+            flutter build ios --no-codesign
+          else
+            flutter build ios
+          fi
     artifacts:
-      - build/ios/ipa/*.ipa
-      
+      - build/ios/iphoneos/Runner.app
+      - build/ios/iphoneos/Runner.app.dSYM.zip
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
     publishing:
       email:
         recipients:
-          - oneappsmj@gmail.com
-      app_store_connect:  # Optional: Publish directly to TestFlight
-        submit_to_testflight: true
-        beta_groups:  # Add your TestFlight beta group names
-          - "Internal Testers"
+          - your-email@example.com
