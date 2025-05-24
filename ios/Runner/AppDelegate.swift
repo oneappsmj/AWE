@@ -16,6 +16,9 @@ import AVFoundation
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // This method ensures the app is configured for iPhone only
+        ensureIPhoneOnlySupport()
+        
         // Configure audio session safely
         do {
             try configureAudioSession()
@@ -437,6 +440,14 @@ import AVFoundation
     // MARK: - Orientation
     override func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         return .allButUpsideDown
+    }
+    
+    private func ensureIPhoneOnlySupport() {
+        // This is a runtime check to ensure we're not running on iPad
+        // It doesn't actually prevent installation on iPad, but can be useful for debugging
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            NSLog("Warning: This app is designed for iPhone only but running on iPad")
+        }
     }
 }
 

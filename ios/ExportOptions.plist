@@ -10,5 +10,16 @@
     <false/> <!-- Disable for Flutter -->
     <key>uploadSymbols</key>
     <true/>
+    <key>signingStyle</key>
+    <string>manual</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.example.downloadsplatform</key>
+        <string>com.example.downloadsplatform.CV8N38BFPJ</string>
+    </dict>
+    <key>supportedDeviceFamilies</key>
+    <array>
+        <integer>1</integer>
+    </array>
 </dict>
 </plist>
