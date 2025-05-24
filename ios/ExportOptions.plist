@@ -10,5 +10,9 @@
     <false/> <!-- Disable for Flutter -->
     <key>uploadSymbols</key>
     <true/>
+    <key>supportedDeviceFamilies</key>
+    <array>
+        <integer>1</integer>
+    </array>
 </dict>
 </plist>
