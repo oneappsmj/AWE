@@ -4,27 +4,11 @@ workflows:
     instance_type: mac_mini_m1
     max_build_duration: 60
     environment:
-      ios_signing:
-        distribution_type: development
-        bundle_identifier: com.example.downloadsplatform
       vars:
         XCODE_WORKSPACE: "Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
       flutter: stable
     scripts:
-      - name: Set up code signing
-        script: |
-          echo "Setting up code signing..."
-          if [ -z "$CM_CERTIFICATE" ]; then
-            # No certificate, use no-codesign option
-            echo "No certificate found, will build without code signing"
-          else
-            # Use Codemagic's automatic code signing
-            keychain initialize
-            app-store-connect fetch-signing-files "$BUNDLE_ID" --type IOS_APP_DEVELOPMENT
-            keychain add-certificates
-            xcode-project use-profiles
-          fi
       - name: Update Podfile for Flutter
         script: |
           echo "Updating Podfile..."
@@ -53,11 +37,7 @@ workflows:
           pod install
       - name: Flutter build iOS
         script: |
-          if [ -z "$CM_CERTIFICATE" ]; then
-            flutter build ios --no-codesign
-          else
-            flutter build ios
-          fi
+          flutter build ios --no-codesign
     artifacts:
       - build/ios/iphoneos/Runner.app
       - build/ios/iphoneos/Runner.app.dSYM.zip
@@ -66,4 +46,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com
+          - oneappsmj@gmail.com
