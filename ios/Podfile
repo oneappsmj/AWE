@@ -49,6 +49,13 @@ post_install do |installer|
       # Fix compatibility issues
       config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
       
+      # Handle code signing for simulator
+      if config.build_settings['SDKROOT'] == 'iphonesimulator' || config.name.include?('Simulator') || config.name.include?('simulator')
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+        config.build_settings['CODE_SIGNING_IDENTITY'] = ''
+      end
+      
       # Avoid microphone usage (causes permission issues)
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
