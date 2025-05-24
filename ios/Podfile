@@ -46,7 +46,7 @@ post_install do |installer|
       # Fix iOS 15+ issues
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       
-      # Fix compatibility with iPadOS 18.5
+      # Fix compatibility issues
       config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
       
       # Avoid microphone usage (causes permission issues)
@@ -54,6 +54,12 @@ post_install do |installer|
         '$(inherited)',
         'AUDIO_SESSION_MICROPHONE=0'
       ]
+      
+      # Fix flutter_secure_storage Swift issues
+      if target.name == 'flutter_secure_storage'
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+        config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      end
       
       # Add Swift optimization settings to improve stability
       if config.name == 'Release'

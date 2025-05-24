@@ -25,6 +25,12 @@
   <key>LSRequiresIPhoneOS</key>
   <true/>
 
+  <!-- Specify iPhone only -->
+  <key>UIDeviceFamily</key>
+  <array>
+    <integer>1</integer>
+  </array>
+
   <!-- Export Options -->
   <key>method</key>
   <string>app-store</string>
@@ -43,15 +49,6 @@
 
   <!-- Supported Orientations -->
   <key>UISupportedInterfaceOrientations</key>
-  <array>
-    <string>UIInterfaceOrientationPortrait</string>
-    <string>UIInterfaceOrientationPortraitUpsideDown</string>
-    <string>UIInterfaceOrientationLandscapeLeft</string>
-    <string>UIInterfaceOrientationLandscapeRight</string>
-  </array>
-
-  <!-- Supported Orientations for iPad -->
-  <key>UISupportedInterfaceOrientations~ipad</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
     <string>UIInterfaceOrientationPortraitUpsideDown</string>
@@ -143,5 +140,11 @@
   <true/>
   <key>UIApplicationSupportsIndirectInputEvents</key>
   <true/>
+  
+  <!-- Keychain Access Groups for flutter_secure_storage -->
+  <key>keychain-access-groups</key>
+  <array>
+    <string>$(AppIdentifierPrefix)com.example.downloadsplatform</string>
+  </array>
 </dict>
 </plist>
