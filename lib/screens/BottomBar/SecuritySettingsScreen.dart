@@ -2,7 +2,6 @@ import 'package:downloadsplatform/screens/HomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AppLifecycleObserver with WidgetsBindingObserver {
   final BuildContext context;
@@ -51,11 +50,7 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen> {
   final LocalAuthentication _localAuth = LocalAuthentication();
-  final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-  );
+  final _storage = SharedPreferences.getInstance();
   bool _isAuthenticated = false;
   String _password = '';
   late AppLifecycleObserver _lifecycleObserver;
@@ -94,7 +89,7 @@ class _LockScreenState extends State<LockScreen> {
         setState(() => _isAuthenticated = true);
         return;
       }
-      final hasPassword = await _storage.containsKey(key: 'app_password');
+      final hasPassword = prefs.containsKey('app_password');
       if (!hasPassword) {
         setState(() => _isAuthenticated = true);
         return;
@@ -125,7 +120,8 @@ class _LockScreenState extends State<LockScreen> {
 
   Future<bool> _verifyPassword(String password) async {
     try {
-      final storedPassword = await _storage.read(key: 'app_password');
+      final prefs = await SharedPreferences.getInstance();
+      final storedPassword = prefs.getString('app_password');
       return password == storedPassword;
     } catch (e) {
       print('Password verification error: $e');
@@ -197,11 +193,13 @@ class _LockScreenState extends State<LockScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _isAuthenticated ? widget.child : Scaffold(
-      body: Center(
-        child: HomeScreen(),
-      ),
-    );
+    return _isAuthenticated
+        ? widget.child
+        : Scaffold(
+            body: Center(
+              child: HomeScreen(),
+            ),
+          );
   }
 }
 
@@ -214,11 +212,7 @@ class SecuritySettings extends StatefulWidget {
 
 class _SecuritySettingsState extends State<SecuritySettings> {
   final LocalAuthentication _localAuth = LocalAuthentication();
-  final _storage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
-  );
+  final _storage = SharedPreferences.getInstance();
   bool _isBiometricAvailable = false;
   bool _isPasswordEnabled = false;
 
@@ -242,9 +236,10 @@ class _SecuritySettingsState extends State<SecuritySettings> {
 
   Future<void> _loadSettings() async {
     try {
-      final hasPassword = await _storage.containsKey(key: 'app_password');
+      final prefs = await SharedPreferences.getInstance();
+      final hasPassword = prefs.containsKey('app_password');
 
-      setState(() async{
+      setState(() async {
         _isBiometricAvailable = await _checkFingerprintSupport();
         _isPasswordEnabled = hasPassword;
       });
@@ -272,8 +267,8 @@ class _SecuritySettingsState extends State<SecuritySettings> {
 
   Future<bool> _savePassword(String password) async {
     try {
-      await _storage.write(key: 'app_password', value: password);
       final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('app_password', password);
       await prefs.setBool('isLockEnabled', true);
       setState(() => _isPasswordEnabled = true);
       return true;
@@ -288,8 +283,8 @@ class _SecuritySettingsState extends State<SecuritySettings> {
 
   Future<void> _disableLock() async {
     try {
-      await _storage.delete(key: 'app_password');
       final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('app_password');
       await prefs.setBool('isLockEnabled', false);
       setState(() => _isPasswordEnabled = false);
     } catch (e) {
