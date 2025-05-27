@@ -5,7 +5,7 @@
   <key>CFBundleDevelopmentRegion</key>
   <string>$(DEVELOPMENT_LANGUAGE)</string>
   <key>CFBundleDisplayName</key>
-  <string>Downloadsplatform</string>
+  <string>Downloads Platform</string>
   <key>CFBundleExecutable</key>
   <string>$(EXECUTABLE_NAME)</string>
   <key>CFBundleIdentifier</key>
@@ -19,7 +19,7 @@
   <key>CFBundleShortVersionString</key>
   <string>$(FLUTTER_BUILD_NAME)</string>
   <key>CFBundleSignature</key>
-  <string>DWNL</string>
+  <string>????</string>
   <key>CFBundleVersion</key>
   <string>$(FLUTTER_BUILD_NUMBER)</string>
   <key>LSRequiresIPhoneOS</key>
@@ -51,22 +51,21 @@
   <key>UISupportedInterfaceOrientations</key>
   <array>
     <string>UIInterfaceOrientationPortrait</string>
-    <string>UIInterfaceOrientationPortraitUpsideDown</string>
     <string>UIInterfaceOrientationLandscapeLeft</string>
     <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
 
   <!-- Media Access Permissions -->
   <key>NSPhotoLibraryUsageDescription</key>
-  <string>This app needs access to your photo library to save files</string>
+  <string>We need access to photo library to save and manage your downloads</string>
   <key>NSPhotoLibraryAddUsageDescription</key>
   <string>We need access to save files to your library.</string>
   <key>NSAppleMusicUsageDescription</key>
   <string>We need access to save media files.</string>
   <key>NSCameraUsageDescription</key>
-  <string>Required for video playback</string>
+  <string>We need camera access to scan QR codes and take photos</string>
   <key>NSMicrophoneUsageDescription</key>
-  <string>Required for audio playback</string>
+  <string>We need microphone access for video recording</string>
 
   <!-- Network Configuration -->
   <key>NSAppTransportSecurity</key>
@@ -95,14 +94,14 @@
 
   <!-- Biometric Authentication -->
   <key>NSFaceIDUsageDescription</key>
-  <string>نحتاج إلى المصادقة البيومترية لتأمين التطبيق</string>
+  <string>We need to use Face ID to secure your app access</string>
 
   <!-- Background Modes -->
   <key>UIBackgroundModes</key>
   <array>
     <string>audio</string>
     <string>fetch</string>
-    <string>processing</string>
+    <string>remote-notification</string>
   </array>
 
   <!-- View Controller -->
@@ -150,5 +149,14 @@
   <!-- Add these keys -->
   <key>UIRequiresFullScreen</key>
   <true/>
+
+  <!-- Add these keys -->
+  <key>UISupportedInterfaceOrientations~ipad</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationPortraitUpsideDown</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
 </dict>
 </plist>
