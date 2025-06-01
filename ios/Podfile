@@ -35,17 +35,7 @@ target 'Runner' do
   end
 end
 
-# In ios/Podfile, add:
-post_install do |installer|
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-      # Enable these to make Swift compilation more robust
-      config.build_settings['SWIFT_VERSION'] = '5.0'
-      config.build_settings['ENABLE_BITCODE'] = 'NO'
-    end
-  end
-end
+
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
