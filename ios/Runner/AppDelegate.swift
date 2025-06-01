@@ -7,11 +7,14 @@ import path_provider_foundation
 // Add this extension directly in AppDelegate.swift
 extension PathProviderPlugin {
     // Provide a safe fallback for registration
-    static func safeRegister(with registrar: FlutterPluginRegistrar) {
+    static func safeRegister(with registrar: FlutterPluginRegistrar?) {
+         guard let registrar = registrar else {
+            print("PathProviderPlugin registration failed: Registrar is nil")
+            return
+        }
         do {
             register(with: registrar)
         } catch {
-            // Log the error but don't crash
             print("PathProviderPlugin registration failed: \(error)")
         }
     }
@@ -44,7 +47,12 @@ extension PathProviderPlugin {
     
     // Use our safe registration method from the extension
     let registry = controller as FlutterPluginRegistry
-    PathProviderPlugin.safeRegister(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+    // With this:
+if let registrar = registry.registrar(forPlugin: "PathProviderPlugin") {
+    PathProviderPlugin.safeRegister(with: registrar)
+} else {
+    print("Warning: Failed to get registrar for PathProviderPlugin")
+}
     
     // Register all other plugins
     GeneratedPluginRegistrant.register(with: self)
