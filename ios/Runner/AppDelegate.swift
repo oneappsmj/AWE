@@ -2,8 +2,7 @@ import UIKit
 import Flutter
 import AVKit
 import AVFoundation
-import path_provider_foundation  // Add this import
-// import fl_pip
+
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -17,39 +16,31 @@ import path_provider_foundation  // Add this import
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // Force-load PathProviderPlugin before engine starts
-        let _ = PathProviderPlugin.plugin  // Pre-initialization fix
+         // Register plugins first but skip path_provider
+    let defaultHandler = FlutterMethodChannel.setUp
+    FlutterMethodChannel.setUp = { (messenger, name) -> FlutterMethodChannel in
+        // Skip path_provider_foundation channel setup initially
+        if name == "plugins.flutter.io/path_provider" {
+            return FlutterMethodChannel(name: name, binaryMessenger: messenger)
+        }
+        return defaultHandler(messenger, name)
+    }
         // Configure audio session safely
-
-
         do {
+        // Initialize both channels
+        GeneratedPluginRegistrant.register(with: self)
+        FlutterMethodChannel.setUp = defaultHandler
+        
+        // Register plugins
             try configureAudioSession()
         } catch {
             print("Failed to configure audio session: \(error.localizedDescription)")
         }
         
         let controller = window?.rootViewController as! FlutterViewController
+        setupThumbnailChannel(controller: controller)
+        setupPipChannel(controller: controller)
         
-        // Initialize both channels with try-catch blocks for error handling
-        do {
-            setupThumbnailChannel(controller: controller)
-        } catch {
-            print("Failed to setup thumbnail channel: \(error)")
-        }
-        
-        do {
-            setupPipChannel(controller: controller)
-        } catch {
-            print("Failed to setup PIP channel: \(error)")
-        }
-        
-        // Use try-catch to safely initialize plugins in case of errors
-        do {
-            GeneratedPluginRegistrant.register(with: self)
-        } catch {
-            print("Failed to register plugins: \(error)")
-            // If a plugin fails to register, continue with the application startup
-        }
         
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -274,28 +265,37 @@ import path_provider_foundation  // Add this import
     
     // MARK: - PIP Helper Methods
     private func setupPlayerViewController() throws {
-        playerViewController = AVPlayerViewController()
-        guard let playerVC = playerViewController else {
-            throw NSError(domain: "com.downloadsplatform", code: 1001, 
-                        userInfo: [NSLocalizedDescriptionKey: "Failed to create AVPlayerViewController"])
-        }
-        
-        playerVC.player = pipPlayer
-        playerVC.allowsPictureInPicturePlayback = true
-        playerVC.showsPlaybackControls = false
-
-        // Use full screen layout initially
-        playerVC.view.frame = UIScreen.main.bounds
-        
-        guard let rootVC = window?.rootViewController else {
-            throw NSError(domain: "com.downloadsplatform", code: 1002, 
-                        userInfo: [NSLocalizedDescriptionKey: "Root view controller not available"])
-        }
-        
-        rootVC.view.addSubview(playerVC.view)
-        rootVC.addChild(playerVC)
-        playerVC.didMove(toParent: rootVC)
+    // Clean up any existing player view controller
+    if let existingVC = playerViewController {
+        existingVC.willMove(toParent: nil)
+        existingVC.view.removeFromSuperview()
+        existingVC.removeFromParent()
+        existingVC.player = nil
     }
+    
+    playerViewController = AVPlayerViewController()
+    guard let playerVC = playerViewController else {
+        throw NSError(domain: "com.downloadsplatform", code: 1001, 
+                    userInfo: [NSLocalizedDescriptionKey: "Failed to create AVPlayerViewController"])
+    }
+    
+    playerVC.player = pipPlayer
+    playerVC.allowsPictureInPicturePlayback = true
+    playerVC.showsPlaybackControls = true // Show controls for better user experience
+
+    // Add to view hierarchy properly
+    playerVC.view.frame = CGRect(x: 0, y: 0, width: 1, height: 1) // Minimal size initially
+    playerVC.view.isHidden = true // Hide initially
+    
+    guard let rootVC = window?.rootViewController else {
+        throw NSError(domain: "com.downloadsplatform", code: 1002, 
+                    userInfo: [NSLocalizedDescriptionKey: "Root view controller not available"])
+    }
+    
+    rootVC.view.addSubview(playerVC.view)
+    rootVC.addChild(playerVC)
+    playerVC.didMove(toParent: rootVC)
+}
     
     private func setupPictureInPicture(result: @escaping FlutterResult) {
         // Cancel any existing setup
@@ -359,7 +359,9 @@ import path_provider_foundation  // Add this import
                         // Use canStartPictureInPictureAutomaticallyFromInline for iOS 14.2+
                         pipController.canStartPictureInPictureAutomaticallyFromInline = true
                     }
-                   self.pipController.startPictureInPicture()
+                    
+                    // FIXED: Safe unwrapping before calling startPictureInPicture()
+                    pipController.startPictureInPicture()
                     result(nil)
                 } else {
                     result(FlutterError(code: "PIP_ERROR", message: "PiP not possible at this moment", details: nil))
@@ -390,14 +392,8 @@ import path_provider_foundation  // Add this import
         pipSetupWorkItem = nil
         
         // Remove notification observers
-        NotificationCenter.default.removeObserver(self, 
-            name: UIApplication.didEnterBackgroundNotification, 
-            object: nil
-        )
-        NotificationCenter.default.removeObserver(self, 
-            name: UIApplication.willEnterForegroundNotification, 
-            object: nil
-        )
+        NotificationCenter.default.removeObserver(self)
+    
         
         // Safely stop playback
         pipPlayer?.pause()
@@ -407,6 +403,7 @@ import path_provider_foundation  // Add this import
         if pipController?.isPictureInPictureActive == true {
             pipController?.stopPictureInPicture()
         }
+        pipController?.delegate = nil
         pipController = nil
         
         // Clean up player view controller
@@ -420,19 +417,23 @@ import path_provider_foundation  // Add this import
     
     // MARK: - Lifecycle Handlers
     @objc private func handleBackgroundTransition() throws {
-        if let player = pipPlayer, 
-           let controller = pipController, 
-           !controller.isPictureInPictureActive,
-           controller.isPictureInPicturePossible {
-            controller.startPictureInPicture()
-        }
-        
-        var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-        backgroundTaskID = UIApplication.shared.beginBackgroundTask {
-            UIApplication.shared.endBackgroundTask(backgroundTaskID)
-            backgroundTaskID = .invalid
-        }
+    // Only start PiP if we have an active player
+    if let player = pipPlayer, player.rate > 0,
+       let controller = pipController, 
+       !controller.isPictureInPictureActive,
+       controller.isPictureInPicturePossible {
+        controller.startPictureInPicture()
     }
+    
+    // Proper background task handling
+    var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+    backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
+        // Clean up on expiration
+        self?.pipPlayer?.pause()
+        UIApplication.shared.endBackgroundTask(backgroundTaskID)
+        backgroundTaskID = .invalid
+    }
+}
     
     @objc private func handleForegroundTransition() throws {
         if pipController?.isPictureInPictureActive == true {
@@ -483,7 +484,30 @@ extension AppDelegate: AVPictureInPictureControllerDelegate {
 
 extension AVPlayerViewController {
     var playerView: UIView? {
-        // Safely find the player view
-        return self.view.subviews.first(where: { $0.layer is AVPlayerLayer })
+    // First try the direct approach
+    let directResult = self.view.subviews.first(where: { $0.layer is AVPlayerLayer })
+    if directResult != nil {
+        return directResult
     }
+    
+    // Try recursive search as fallback
+    for subview in self.view.subviews {
+        if let found = findPlayerLayerView(in: subview) {
+            return found
+        }
+    }
+    return nil
+}
+
+private func findPlayerLayerView(in view: UIView) -> UIView? {
+    if view.layer is AVPlayerLayer {
+        return view
+    }
+    for subview in view.subviews {
+        if let found = findPlayerLayerView(in: subview) {
+            return found
+        }
+    }
+    return nil
+}
 }

@@ -57,11 +57,11 @@
 
   <!-- Media Access Permissions -->
   <key>NSPhotoLibraryUsageDescription</key>
-  <string>We need access to photo library to save and manage your downloads</string>
+  <string>This app requires access to your photo library to save and share media files.</string>
   <key>NSPhotoLibraryAddUsageDescription</key>
-  <string>We need access to save files to your library.</string>
+  <string>This app requires access to your photo library to save and share media files.</string>
   <key>NSAppleMusicUsageDescription</key>
-  <string>We need access to save media files.</string>
+  <string>This app requires access to your photo library to save and share media files.</string>
   <key>NSCameraUsageDescription</key>
   <string>We need camera access to scan QR codes and take photos</string>
   <key>NSMicrophoneUsageDescription</key>
