@@ -13,37 +13,31 @@ import AVFoundation
     private var pipSetupWorkItem: DispatchWorkItem?
     
     override func application(
-        _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-    ) -> Bool {
-         // Register plugins first but skip path_provider
-    let defaultHandler = FlutterMethodChannel.setUp
-    FlutterMethodChannel.setUp = { (messenger, name) -> FlutterMethodChannel in
-        // Skip path_provider_foundation channel setup initially
-        if name == "plugins.flutter.io/path_provider" {
-            return FlutterMethodChannel(name: name, binaryMessenger: messenger)
-        }
-        return defaultHandler(messenger, name)
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+) -> Bool {
+    // Configure audio session safely
+    do {
+        try configureAudioSession()
+    } catch {
+        print("Failed to configure audio session: \(error.localizedDescription)")
     }
-        // Configure audio session safely
-        do {
-        // Initialize both channels
-        GeneratedPluginRegistrant.register(with: self)
-        FlutterMethodChannel.setUp = defaultHandler
-        
-        // Register plugins
-            try configureAudioSession()
-        } catch {
-            print("Failed to configure audio session: \(error.localizedDescription)")
-        }
-        
-        let controller = window?.rootViewController as! FlutterViewController
-        setupThumbnailChannel(controller: controller)
-        setupPipChannel(controller: controller)
-        
-        
-        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-    }
+    
+    let controller = window?.rootViewController as! FlutterViewController
+    
+    // Initialize channels first
+    setupThumbnailChannel(controller: controller)
+    setupPipChannel(controller: controller)
+    
+    // Use our safe registration method from the extension
+    let registry = controller as FlutterPluginRegistry
+    PathProviderPlugin.safeRegister(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+    
+    // Register all other plugins
+    GeneratedPluginRegistrant.register(with: self)
+    
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+}
     
     // MARK: - Application Lifecycle
     override func applicationWillEnterForeground(_ application: UIApplication) {
