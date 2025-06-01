@@ -2,6 +2,7 @@ import UIKit
 import Flutter
 import AVKit
 import AVFoundation
+import path_provider_foundation  // Add this import
 // import fl_pip
 
 @main
@@ -16,7 +17,11 @@ import AVFoundation
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // Force-load PathProviderPlugin before engine starts
+        let _ = PathProviderPlugin.plugin  // Pre-initialization fix
         // Configure audio session safely
+
+
         do {
             try configureAudioSession()
         } catch {
@@ -324,6 +329,7 @@ import AVFoundation
             // Create PiP controller with safely unwrapped player layer
             self.pipController = AVPictureInPictureController(playerLayer: playerLayer)
             self.pipController?.delegate = self
+             
             
             // Add observer only if controller initialized successfully
             if self.pipController != nil {
@@ -353,7 +359,7 @@ import AVFoundation
                         // Use canStartPictureInPictureAutomaticallyFromInline for iOS 14.2+
                         pipController.canStartPictureInPictureAutomaticallyFromInline = true
                     }
-                    pipController.startPictureInPicture()
+                   self.pipController.startPictureInPicture()
                     result(nil)
                 } else {
                     result(FlutterError(code: "PIP_ERROR", message: "PiP not possible at this moment", details: nil))
