@@ -65,9 +65,9 @@ jobs:
 
       - name: Install CocoaPods
         run: |
+          cd ios
           sudo gem install cocoapods
           pod setup
-          cd ios
           pod install --repo-update || pod install
       - name: Workaround for video_player privacy
         run: |
