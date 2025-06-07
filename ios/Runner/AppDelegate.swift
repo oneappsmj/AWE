@@ -48,11 +48,12 @@ extension PathProviderPlugin {
     // Use our safe registration method from the extension
     let registry = controller as FlutterPluginRegistry
     // With this:
-if let registrar = registry.registrar(forPlugin: "PathProviderPlugin") {
-    PathProviderPlugin.safeRegister(with: registrar)
-} else {
-    print("Warning: Failed to get registrar for PathProviderPlugin")
-}
+     // Safe registration for path_provider
+    if let registrar = registry.registrar(forPlugin: "PathProviderPlugin") {
+        PathProviderPlugin.register(with: registrar) // Use direct registration
+    } else {
+        print("Warning: PathProviderPlugin registrar is nil")
+    }
     
     // Register all other plugins
     GeneratedPluginRegistrant.register(with: self)

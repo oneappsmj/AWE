@@ -35,39 +35,43 @@ target 'Runner' do
   end
 end
 
-
-
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-    
     target.build_configurations.each do |config|
-      # Enable AVKit framework
+      # ==== START OF CRITICAL FIX FOR iOS 18.5 CRASH ====
+      if target.name == 'path_provider_foundation'
+        # Disable sanitizers to prevent EXC_BAD_ACCESS crash
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= []
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'PDISABLE_SANITIZERS=1'
+        
+        # Ensure Swift compatibility
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+      end
+      # ==== END OF CRITICAL FIX ====
+
+      # Existing settings
       config.build_settings['ENABLE_BITCODE'] = 'NO'
-      
-      # Fix iOS 15+ issues
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-      
-      # Fix compatibility issues
       config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
       
-      # Avoid microphone usage (causes permission issues)
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-        '$(inherited)',
-        'AUDIO_SESSION_MICROPHONE=0'
-      ]
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= []
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << '$(inherited)'
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'AUDIO_SESSION_MICROPHONE=0' unless target.name == 'path_provider_foundation'
       
-      # Fix flutter_secure_storage Swift issues
-      if target.name == 'flutter_secure_storage'
-        config.build_settings['SWIFT_VERSION'] = '5.0'
-        config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
-      end
+      # Fix Swift 5 compatibility for all plugins
+      config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
+      config.build_settings['LIBRARY_SEARCH_PATHS'] = ['$(SDKROOT)/usr/lib/swift']
       
-      # Add Swift optimization settings to improve stability
       if config.name == 'Release'
         config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O'
         config.build_settings['SWIFT_COMPILATION_MODE'] = 'wholemodule'
       end
     end
+  end
+  
+  # Workaround for Xcode 16+ compatibility
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
   end
 end
