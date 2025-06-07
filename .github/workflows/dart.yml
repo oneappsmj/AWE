@@ -69,6 +69,11 @@ jobs:
           pod setup
           cd ios
           pod install --repo-update || pod install
+      - name: Workaround for video_player privacy
+        run: |
+          mkdir -p build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
+          touch build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
+          
 
       - name: Build iOS
         run: flutter build ios --release --no-codesign
