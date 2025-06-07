@@ -49,7 +49,7 @@ post_install do |installer|
         config.build_settings['SWIFT_VERSION'] = '5.0'
       end
       # ==== END OF CRITICAL FIX ====
-      if target.name == 'flutter_secure_storage'Add commentMore actions
+      if target.name == 'flutter_secure_storage'
         config.build_settings['SWIFT_VERSION'] = '5.0'
         config.build_settings['ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES'] = 'YES'
       end
