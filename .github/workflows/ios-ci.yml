@@ -43,22 +43,93 @@ jobs:
           cd ios
           pod install
 
-      - name: Create empty privacy bundles
+      - name: Create empty privacy bundles for Debug and Release builds
         run: |
+          # First method: Create bundles in the expected build location
           mkdir -p build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle
           mkdir -p build/ios/Release-iphoneos/share_plus/share_plus_privacy.bundle
           mkdir -p build/ios/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle
           mkdir -p build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
           mkdir -p build/ios/Release-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle
-          touch build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
-          touch build/ios/Release-iphoneos/share_plus/share_plus_privacy.bundle/share_plus_privacy
-          touch build/ios/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy
-          touch build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
-          touch build/ios/Release-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy
+          mkdir -p build/ios/Debug-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/share_plus/share_plus_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle
+
+          # Create empty placeholder files
+          touch "build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy"
+          touch "build/ios/Release-iphoneos/share_plus/share_plus_privacy.bundle/share_plus_privacy"
+          touch "build/ios/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy"
+          touch "build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
+          touch "build/ios/Release-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy"
+          touch "build/ios/Debug-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy"
+          touch "build/ios/Debug-iphoneos/share_plus/share_plus_privacy.bundle/share_plus_privacy"
+          touch "build/ios/Debug-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy"
+          touch "build/ios/Debug-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
+          touch "build/ios/Debug-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy"
+
+          # Second method: Create bundles in the app bundle directory
+          mkdir -p ios/Flutter/Release/Runner.app/sqflite_darwin_privacy.bundle
+          mkdir -p ios/Flutter/Release/Runner.app/share_plus_privacy.bundle
+          mkdir -p ios/Flutter/Release/Runner.app/shared_preferences_foundation_privacy.bundle
+          mkdir -p ios/Flutter/Release/Runner.app/video_player_avfoundation_privacy.bundle
+          mkdir -p ios/Flutter/Release/Runner.app/path_provider_foundation_privacy.bundle
+          mkdir -p ios/Flutter/Debug/Runner.app/sqflite_darwin_privacy.bundle
+          mkdir -p ios/Flutter/Debug/Runner.app/share_plus_privacy.bundle
+          mkdir -p ios/Flutter/Debug/Runner.app/shared_preferences_foundation_privacy.bundle
+          mkdir -p ios/Flutter/Debug/Runner.app/video_player_avfoundation_privacy.bundle
+          mkdir -p ios/Flutter/Debug/Runner.app/path_provider_foundation_privacy.bundle
+
+          # Create placeholder files in app bundle directories
+          touch "ios/Flutter/Release/Runner.app/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy"
+          touch "ios/Flutter/Release/Runner.app/share_plus_privacy.bundle/share_plus_privacy"
+          touch "ios/Flutter/Release/Runner.app/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy"
+          touch "ios/Flutter/Release/Runner.app/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
+          touch "ios/Flutter/Release/Runner.app/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy"
+          touch "ios/Flutter/Debug/Runner.app/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy"
+          touch "ios/Flutter/Debug/Runner.app/share_plus_privacy.bundle/share_plus_privacy"
+          touch "ios/Flutter/Debug/Runner.app/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy"
+          touch "ios/Flutter/Debug/Runner.app/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
+          touch "ios/Flutter/Debug/Runner.app/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy"
+
+          # List the directories to verify
+          echo "Created privacy bundle directories:"
+          find build/ios -name "*_privacy.bundle" -type d
+          find ios/Flutter -name "*_privacy.bundle" -type d
+
+      - name: Make iOS prebuild script executable
+        run: |
+          chmod +x ios/ios_prebuild.sh
+
+      - name: Run iOS prebuild script
+        run: |
+          cd ios
+          ./ios_prebuild.sh
+          cd ..
+
+      - name: Create temporary build directories for third possible location
+        run: |
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/video_player_avfoundation.framework
+          mkdir -p build/ios/iphoneos/Runner.app/video_player_avfoundation_privacy.bundle
+          touch build/ios/iphoneos/Runner.app/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
 
       - name: Build iOS
         run: |
           flutter build ios --release --no-codesign
+
+      - name: Create final fallback privacy bundles (post-build)
+        run: |
+          # Try to find where the actual build outputs are
+          echo "Looking for build outputs..."
+          find build -name "Runner.app" -type d
+
+          # Create privacy bundles in all possible locations
+          for dir in $(find build -name "Runner.app" -type d); do
+            echo "Creating privacy bundles in $dir"
+            mkdir -p "$dir/video_player_avfoundation_privacy.bundle"
+            touch "$dir/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
+          done
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v3

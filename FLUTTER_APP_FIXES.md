@@ -31,10 +31,13 @@ Error (Xcode): Build input file cannot be found: '..../sqflite_darwin_privacy.bu
 
 We implemented a multi-layered solution:
 
-1. **Shell Script (`privacy_bundle_fix.sh`)**:
+1. **Enhanced Shell Script (`privacy_bundle_fix.sh`)**:
 
    - Creates empty privacy bundle directories and files for all required plugins
-   - Should be run before building the iOS app
+   - Handles all build configurations (Debug/Release)
+   - Creates bundles in multiple locations to ensure coverage
+   - Special handling for video_player_avfoundation
+   - Creates symlinks as fallbacks
 
 2. **Podfile Configuration**:
 
@@ -46,6 +49,7 @@ We implemented a multi-layered solution:
 
    - Added Swift code in `AppDelegate.swift` to create privacy bundles at runtime
    - Ensures the bundles exist regardless of the build process
+   - Provides fallback mechanisms in multiple system locations
 
 4. **Pre-build Script for Xcode (`ios_prebuild.sh`)**:
 
@@ -53,9 +57,10 @@ We implemented a multi-layered solution:
    - Creates privacy bundles in the correct location during the build process
 
 5. **Updated CI/GitHub Actions Workflow**:
-   - Runs the privacy bundle fix script
-   - Includes a manual fallback to create bundles
-   - Improves error reporting
+   - More robust bundle creation in multiple locations
+   - Runs before and after the Flutter build
+   - Creates privacy bundles in all possible output locations
+   - Enhanced diagnostics and verification steps
 
 ## 3. iOS 18.5 Crash Fixes
 
@@ -69,6 +74,7 @@ App crashes on startup with `EXC_BAD_ACCESS` in `PathProviderPlugin` on iOS 18.5
 
    - Created a safe registration method with proper error handling
    - Prevents null pointer dereference crashes
+   - Added functionality to create privacy bundles at runtime
 
 2. **AppDelegate Updates**:
 
@@ -90,16 +96,21 @@ Created several documentation files:
    - Provides multiple solution approaches
    - Includes troubleshooting steps
 
-2. **FLUTTER_APP_FIXES.md** (this file):
+2. **VIDEO_PLAYER_BUNDLE_FIX.md**:
+
+   - Specifically addresses the video_player_avfoundation privacy bundle issue
+   - Explains the comprehensive fix approach
+
+3. **FLUTTER_APP_FIXES.md** (this file):
    - Summary of all applied fixes
 
 ## How to Apply These Fixes
 
 1. Update dependencies:
 
-   ```bash
-   flutter pub get
-   ```
+```bash
+flutter pub get
+```
 
 2. Make the privacy bundle fix script executable:
 

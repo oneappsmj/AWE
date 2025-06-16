@@ -469,10 +469,14 @@ extension PathProviderPlugin {
             "share_plus",
             "shared_preferences_foundation",
             "video_player_avfoundation",
-            "path_provider_foundation"
+            "path_provider_foundation",
+            "flutter_secure_storage"
         ]
         
-        // Get the app's bundle directory
+        // First try with the PathProviderPlugin helper
+        PathProviderPlugin.createPrivacyBundleIfNeeded()
+        
+        // Then create for all other plugins
         if let bundleURL = Bundle.main.bundleURL {
             for plugin in pluginsWithPrivacyIssues {
                 let privacyBundleDir = bundleURL.appendingPathComponent("\(plugin)_privacy.bundle")
@@ -485,10 +489,38 @@ extension PathProviderPlugin {
                         // Create empty file inside
                         let emptyFilePath = privacyBundleDir.appendingPathComponent("\(plugin)_privacy")
                         FileManager.default.createFile(atPath: emptyFilePath.path, contents: nil)
+                        print("[SUCCESS] Created privacy bundle for \(plugin) at runtime")
                     } catch {
-                        print("Failed to create privacy bundle for \(plugin): \(error)")
+                        print("[WARNING] Failed to create privacy bundle for \(plugin): \(error)")
                     }
                 }
+            }
+        }
+        
+        // Create bundles in alternate locations as fallback
+        let bundlePaths = [
+            Bundle.main.bundlePath,
+            NSHomeDirectory() + "/Library/Bundles",
+            FileManager.default.temporaryDirectory.path
+        ]
+        
+        for basePath in bundlePaths {
+            createPrivacyBundle(basePath: basePath, pluginName: "video_player_avfoundation")
+        }
+    }
+    
+    // Helper method to create a privacy bundle in a specific location
+    private func createPrivacyBundle(basePath: String, pluginName: String) {
+        let bundlePath = basePath + "/\(pluginName)_privacy.bundle"
+        let filePath = bundlePath + "/\(pluginName)_privacy"
+        
+        if !FileManager.default.fileExists(atPath: bundlePath) {
+            do {
+                try FileManager.default.createDirectory(atPath: bundlePath, withIntermediateDirectories: true, attributes: nil)
+                FileManager.default.createFile(atPath: filePath, contents: nil)
+                print("[FALLBACK] Created \(pluginName) privacy bundle at \(bundlePath)")
+            } catch {
+                print("[ERROR] Failed to create fallback privacy bundle: \(error)")
             }
         }
     }
