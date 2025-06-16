@@ -1,0 +1,68 @@
+name: iOS CI Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.29.3"
+          channel: "stable"
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          flutter --version
+
+      - name: Setup Ruby and CocoaPods
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods
+          pod --version
+
+      - name: Prepare iOS build
+        run: |
+          cd ios
+          pod install
+
+      - name: Create empty privacy bundles
+        run: |
+          mkdir -p build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle
+          mkdir -p build/ios/Release-iphoneos/share_plus/share_plus_privacy.bundle
+          mkdir -p build/ios/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle
+          mkdir -p build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
+          mkdir -p build/ios/Release-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle
+          touch build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/ios/Release-iphoneos/share_plus/share_plus_privacy.bundle/share_plus_privacy
+          touch build/ios/Release-iphoneos/shared_preferences_foundation/shared_preferences_foundation_privacy.bundle/shared_preferences_foundation_privacy
+          touch build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
+          touch build/ios/Release-iphoneos/path_provider_foundation/path_provider_foundation_privacy.bundle/path_provider_foundation_privacy
+
+      - name: Build iOS
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-build
+          path: build/ios/iphoneos
+          retention-days: 5
