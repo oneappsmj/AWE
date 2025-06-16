@@ -28,7 +28,23 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  country_pickers: ^3.0.1
+  intl: ^0.20.2
+  dropdown_search: ^6.0.1
+  url_launcher: ^6.3.1
+
+  permission_handler: ^11.3.1
+  file_picker: ^8.3.1
+  photo_view: ^0.15.0
+  video_player: ^2.9.3
+  flutter_pdfview: ^1.4.0
+  audio_service: ^0.18.17
+  just_audio: ^0.9.46
+  flutter_overlay_window: ^0.4.5
+  floating: ^6.0.0
+
   path_provider: ^2.1.2
   shared_preferences: ^2.5.1
   firebase_core: ^3.11.0

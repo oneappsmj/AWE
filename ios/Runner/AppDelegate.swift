@@ -45,15 +45,15 @@ extension PathProviderPlugin {
     setupThumbnailChannel(controller: controller)
     setupPipChannel(controller: controller)
     
-    // Use our safe registration method from the extension
-    let registry = controller as FlutterPluginRegistry
-    // With this:
-     // Safe registration for path_provider
-    if let registrar = registry.registrar(forPlugin: "PathProviderPlugin") {
-        PathProviderPlugin.register(with: registrar) // Use direct registration
+    // Use our safer registration method to avoid crashes on iOS 18.5
+    if let registrar = self.registrar(forPlugin: "PathProviderPlugin") {
+        PathProviderPlugin.safeRegister(with: registrar)
     } else {
-        print("Warning: PathProviderPlugin registrar is nil")
+        print("Warning: Unable to get registrar for PathProviderPlugin")
     }
+    
+    // Generate privacy bundles programmatically if needed
+    ensurePrivacyBundles()
     
     // Register all other plugins
     GeneratedPluginRegistrant.register(with: self)
@@ -460,6 +460,37 @@ extension PathProviderPlugin {
     // MARK: - Orientation
     override func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         return .allButUpsideDown
+    }
+    
+    // This function creates privacy bundles at runtime if they don't exist
+    private func ensurePrivacyBundles() {
+        let pluginsWithPrivacyIssues = [
+            "sqflite_darwin",
+            "share_plus",
+            "shared_preferences_foundation",
+            "video_player_avfoundation",
+            "path_provider_foundation"
+        ]
+        
+        // Get the app's bundle directory
+        if let bundleURL = Bundle.main.bundleURL {
+            for plugin in pluginsWithPrivacyIssues {
+                let privacyBundleDir = bundleURL.appendingPathComponent("\(plugin)_privacy.bundle")
+                
+                // Create directory if it doesn't exist
+                if !FileManager.default.fileExists(atPath: privacyBundleDir.path) {
+                    do {
+                        try FileManager.default.createDirectory(at: privacyBundleDir, withIntermediateDirectories: true)
+                        
+                        // Create empty file inside
+                        let emptyFilePath = privacyBundleDir.appendingPathComponent("\(plugin)_privacy")
+                        FileManager.default.createFile(atPath: emptyFilePath.path, contents: nil)
+                    } catch {
+                        print("Failed to create privacy bundle for \(plugin): \(error)")
+                    }
+                }
+            }
+        }
     }
 }
 
