@@ -25,11 +25,20 @@
   <key>LSRequiresIPhoneOS</key>
   <true/>
 
-  <!-- Specify iPhone only -->
+  <!-- iPhone Only - Device Family -->
   <key>UIDeviceFamily</key>
   <array>
     <integer>1</integer>
+    <!-- 1 = iPhone, 2 = iPad, both would be iPhone and iPad -->
   </array>
+
+  <!-- Prevent iPad compatibility mode -->
+  <key>UIRequiresFullScreen</key>
+  <true/>
+  
+  <!-- Remove iPad orientations -->
+  <key>UISupportedInterfaceOrientations~ipad</key>
+  <array/>
 
   <!-- Export Options -->
   <key>method</key>
@@ -144,19 +153,6 @@
   <key>keychain-access-groups</key>
   <array>
     <string>$(AppIdentifierPrefix)com.example.downloadsplatform</string>
-  </array>
-
-  <!-- Add these keys -->
-  <key>UIRequiresFullScreen</key>
-  <true/>
-
-  <!-- Add these keys -->
-  <key>UISupportedInterfaceOrientations~ipad</key>
-  <array>
-    <string>UIInterfaceOrientationPortrait</string>
-    <string>UIInterfaceOrientationPortraitUpsideDown</string>
-    <string>UIInterfaceOrientationLandscapeLeft</string>
-    <string>UIInterfaceOrientationLandscapeRight</string>
   </array>
 </dict>
 </plist>

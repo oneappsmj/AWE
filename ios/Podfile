@@ -28,6 +28,10 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   ENV['COCOAPODS_DISABLE_SYMLINKS'] = 'true'
+  
+  # Fix for path_provider plugin crash
+  pod 'path_provider_foundation', :path => '.symlinks/plugins/path_provider_foundation/ios'
+  
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
   target 'RunnerTests' do
@@ -56,6 +60,13 @@ post_install do |installer|
         
         # Ensure Swift compatibility
         config.build_settings['SWIFT_VERSION'] = '5.0'
+        
+        # Additional memory safety settings
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-Onone' if config.name == 'Debug'
+        config.build_settings['SWIFT_OPTIMIZATION_LEVEL'] = '-O' if config.name != 'Debug'
+        
+        # Force unwrap protection
+        config.build_settings['OTHER_SWIFT_FLAGS'] = '$(inherited) -Xfrontend -warn-long-expression-type-checking=100'
       end
       # ==== END OF CRITICAL FIX ====
       if target.name == 'flutter_secure_storage'
