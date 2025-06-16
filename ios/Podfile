@@ -29,8 +29,8 @@ target 'Runner' do
   use_frameworks!
   ENV['COCOAPODS_DISABLE_SYMLINKS'] = 'true'
   
-  # Fix for path_provider plugin crash
-  pod 'path_provider_foundation', :path => '.symlinks/plugins/path_provider_foundation/ios'
+  # Remove explicit pod for path_provider_foundation to avoid conflicts
+  # Let Flutter manage the plugin paths
   
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 

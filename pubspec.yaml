@@ -75,8 +75,8 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 dependency_overrides:
   intl: ^0.17.0
-  # Explicitly override path_provider_foundation to fix iOS crash issue
-  path_provider_foundation: ^2.3.2
+  # Path provider is handled by Flutter's normal dependency system
+  # No explicit override for path_provider_foundation
 
 # The following section is specific to Flutter packages.
 flutter:
