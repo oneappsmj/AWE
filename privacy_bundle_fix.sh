@@ -18,6 +18,20 @@ PLUGINS=(
   "path_provider_foundation"
   "flutter_secure_storage"
   "url_launcher_ios"
+  "screen_brightness_ios"
+  # Add any potential Flutter plugins that might need privacy bundles
+  "flutter_local_notifications"
+  "image_picker_ios"
+  "camera_avfoundation"
+  "google_maps_flutter_ios"
+  "file_picker"
+  "flutter_native_splash"
+  "flutter_inappwebview"
+  "device_info_plus"
+  "connectivity_plus"
+  "firebase_messaging"
+  "firebase_core"
+  "firebase_analytics"
 )
 
 # Define all possible build configurations
@@ -90,6 +104,13 @@ for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
   touch "${base_dir}/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy"
 done
 
+# Special screen_brightness_ios handling
+echo "Adding special handling for screen_brightness_ios..."
+for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
+  mkdir -p "${base_dir}/screen_brightness_ios_privacy.bundle"
+  touch "${base_dir}/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy"
+done
+
 # Creating symlinks as additional fallback
 echo "Creating symlinks for additional fallback..."
 mkdir -p build/ios/Release-iphoneos/video_player_avfoundation
@@ -111,6 +132,18 @@ fi
 
 if [ -d "build/ios/Debug-iphoneos/url_launcher_ios" ]; then
   ln -sf ../../iphoneos/Runner.app/url_launcher_ios_privacy.bundle build/ios/Debug-iphoneos/url_launcher_ios/
+fi
+
+# Symlinks for screen_brightness_ios
+mkdir -p build/ios/Release-iphoneos/screen_brightness_ios
+mkdir -p build/ios/Debug-iphoneos/screen_brightness_ios
+
+if [ -d "build/ios/Release-iphoneos/screen_brightness_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/screen_brightness_ios_privacy.bundle build/ios/Release-iphoneos/screen_brightness_ios/
+fi
+
+if [ -d "build/ios/Debug-iphoneos/screen_brightness_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/screen_brightness_ios_privacy.bundle build/ios/Debug-iphoneos/screen_brightness_ios/
 fi
 
 # Check which directories were actually created

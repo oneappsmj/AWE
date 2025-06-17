@@ -74,6 +74,20 @@ jobs:
             "shared_preferences_foundation"
             "path_provider_foundation"
             "flutter_secure_storage"
+            "screen_brightness_ios"
+            # Add any potential Flutter plugins that might need privacy bundles
+            "flutter_local_notifications"
+            "image_picker_ios"
+            "camera_avfoundation"
+            "google_maps_flutter_ios"
+            "file_picker"
+            "flutter_native_splash"
+            "flutter_inappwebview"
+            "device_info_plus"
+            "connectivity_plus"
+            "firebase_messaging"
+            "firebase_core"
+            "firebase_analytics"
           )
 
           CONFIGS=(
@@ -88,16 +102,29 @@ jobs:
             "ios/Flutter"
             "build/ios/iphoneos"
             "ios/build"
+            "build"
+            "ios"
+            ".symlinks/plugins"
           )
+
+          echo "Creating privacy bundles for all plugins..."
 
           # Create comprehensive set of bundles for all plugins
           for plugin in "${PLUGINS[@]}"; do
+            # Log the plugin being processed
+            echo "Processing privacy bundles for plugin: ${plugin}"
+            
             # Create in all build configurations
             for config in "${CONFIGS[@]}"; do
               for base_dir in "${BASE_DIRS[@]}"; do
                 mkdir -p "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle"
                 touch "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle/${plugin}_privacy"
                 touch "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
+                
+                # Also create in a common location that might be referenced
+                mkdir -p "${base_dir}/${plugin}/${plugin}_privacy.bundle"
+                touch "${base_dir}/${plugin}/${plugin}_privacy.bundle/${plugin}_privacy"
+                touch "${base_dir}/${plugin}/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
               done
             done
             
@@ -117,9 +144,16 @@ jobs:
               touch "${dir}/${plugin}_privacy.bundle/${plugin}_privacy"
               touch "${dir}/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
             done
+            
+            # Create directly in plugin directory
+            mkdir -p "${plugin}_privacy.bundle"
+            touch "${plugin}_privacy.bundle/${plugin}_privacy"
+            touch "${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
           done
 
           echo "Created all privacy bundles for plugins"
+          find build -name "*_privacy.bundle" -type d | sort
+          find ios -name "*_privacy.bundle" -type d | sort
 
       - name: Install CocoaPods
         run: |
@@ -189,6 +223,26 @@ jobs:
           mkdir -p build/sqflite_darwin_privacy.bundle
           touch build/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
           touch build/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Add similar fixes for screen_brightness_ios
+          mkdir -p build/ios/Release-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/screen_brightness_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/screen_brightness_ios.framework/screen_brightness_ios_privacy.bundle
+
+          touch build/ios/Release-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
+          touch build/ios/Release-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/Debug-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
+          touch build/ios/Debug-iphoneos/screen_brightness_ios/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
+          touch build/ios/iphoneos/Runner.app/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/screen_brightness_ios.framework/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/screen_brightness_ios.framework/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Create special directory for screen_brightness_ios
+          mkdir -p build/screen_brightness_ios_privacy.bundle
+          touch build/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
+          touch build/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
 
       - name: Run comprehensive privacy bundle fix script
         run: |
