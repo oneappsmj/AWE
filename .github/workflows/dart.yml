@@ -92,6 +92,26 @@ jobs:
           touch build/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
           touch build/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
 
+          # Add similar fixes for url_launcher_ios
+          mkdir -p build/ios/Release-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/url_launcher_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/url_launcher_ios.framework/url_launcher_ios_privacy.bundle
+
+          touch build/ios/Release-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
+          touch build/ios/Release-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/Debug-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
+          touch build/ios/Debug-iphoneos/url_launcher_ios/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
+          touch build/ios/iphoneos/Runner.app/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/url_launcher_ios.framework/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/url_launcher_ios.framework/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Create special directory for url_launcher_ios
+          mkdir -p build/url_launcher_ios_privacy.bundle
+          touch build/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
+          touch build/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
       - name: Run comprehensive privacy bundle fix script
         run: |
           chmod +x ./privacy_bundle_fix.sh

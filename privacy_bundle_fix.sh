@@ -17,6 +17,7 @@ PLUGINS=(
   "video_player_avfoundation"
   "path_provider_foundation"
   "flutter_secure_storage"
+  "url_launcher_ios"
 )
 
 # Define all possible build configurations
@@ -82,10 +83,19 @@ for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
   touch "${base_dir}/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy"
 done
 
+# Special url_launcher_ios handling
+echo "Adding special handling for url_launcher_ios..."
+for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
+  mkdir -p "${base_dir}/url_launcher_ios_privacy.bundle"
+  touch "${base_dir}/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy"
+done
+
 # Creating symlinks as additional fallback
 echo "Creating symlinks for additional fallback..."
 mkdir -p build/ios/Release-iphoneos/video_player_avfoundation
 mkdir -p build/ios/Debug-iphoneos/video_player_avfoundation
+mkdir -p build/ios/Release-iphoneos/url_launcher_ios
+mkdir -p build/ios/Debug-iphoneos/url_launcher_ios
 
 if [ -d "build/ios/Release-iphoneos/video_player_avfoundation" ]; then
   ln -sf ../../iphoneos/Runner.app/video_player_avfoundation_privacy.bundle build/ios/Release-iphoneos/video_player_avfoundation/
@@ -93,6 +103,14 @@ fi
 
 if [ -d "build/ios/Debug-iphoneos/video_player_avfoundation" ]; then
   ln -sf ../../iphoneos/Runner.app/video_player_avfoundation_privacy.bundle build/ios/Debug-iphoneos/video_player_avfoundation/
+fi
+
+if [ -d "build/ios/Release-iphoneos/url_launcher_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/url_launcher_ios_privacy.bundle build/ios/Release-iphoneos/url_launcher_ios/
+fi
+
+if [ -d "build/ios/Debug-iphoneos/url_launcher_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/url_launcher_ios_privacy.bundle build/ios/Debug-iphoneos/url_launcher_ios/
 fi
 
 # Check which directories were actually created
