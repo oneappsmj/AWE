@@ -1,9 +1,9 @@
 name: Flutter CI/CD
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 jobs:
   build_android:
     runs-on: ubuntu-latest
@@ -13,14 +13,14 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           cache: true
-          channel: 'stable'
+          channel: "stable"
 
       - name: Display Flutter/Dart version
         run: |
@@ -55,7 +55,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           cache: true
-          channel: 'stable'
+          channel: "stable"
 
       - name: Get dependencies
         run: flutter pub get
@@ -71,9 +71,31 @@ jobs:
           pod install --repo-update || pod install
       - name: Workaround for video_player privacy
         run: |
+          # Create directories for all possible locations
           mkdir -p build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/video_player_avfoundation_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/video_player_avfoundation.framework/video_player_avfoundation_privacy.bundle
+
+          # Create the required files in each location
+          touch build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
           touch build/ios/Release-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
-          
+          touch build/ios/Debug-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
+          touch build/ios/Debug-iphoneos/video_player_avfoundation/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
+          touch build/ios/iphoneos/Runner.app/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/video_player_avfoundation.framework/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/video_player_avfoundation.framework/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Create special directory that might be referenced directly
+          mkdir -p build/video_player_avfoundation_privacy.bundle
+          touch build/video_player_avfoundation_privacy.bundle/video_player_avfoundation_privacy
+          touch build/video_player_avfoundation_privacy.bundle/PrivacyInfo.xcprivacy
+
+      - name: Run comprehensive privacy bundle fix script
+        run: |
+          chmod +x ./privacy_bundle_fix.sh
+          ./privacy_bundle_fix.sh
 
       - name: Build iOS
         run: flutter build ios --release --no-codesign
