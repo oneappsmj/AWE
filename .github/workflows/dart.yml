@@ -63,6 +63,64 @@ jobs:
       - name: Pod repo update
         run: pod repo update
 
+      - name: Create all plugin privacy bundles (pre-install)
+        run: |
+          # Define arrays
+          PLUGINS=(
+            "video_player_avfoundation"
+            "url_launcher_ios"
+            "sqflite_darwin"
+            "share_plus"
+            "shared_preferences_foundation"
+            "path_provider_foundation"
+            "flutter_secure_storage"
+          )
+
+          CONFIGS=(
+            "Debug-iphoneos"
+            "Release-iphoneos"
+            "Debug-iphonesimulator"
+            "Release-iphonesimulator"
+          )
+
+          BASE_DIRS=(
+            "build/ios"
+            "ios/Flutter"
+            "build/ios/iphoneos"
+            "ios/build"
+          )
+
+          # Create comprehensive set of bundles for all plugins
+          for plugin in "${PLUGINS[@]}"; do
+            # Create in all build configurations
+            for config in "${CONFIGS[@]}"; do
+              for base_dir in "${BASE_DIRS[@]}"; do
+                mkdir -p "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle"
+                touch "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle/${plugin}_privacy"
+                touch "${base_dir}/${config}/${plugin}/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
+              done
+            done
+            
+            # Create directly in app bundle locations
+            mkdir -p "build/ios/iphoneos/Runner.app/${plugin}_privacy.bundle"
+            touch "build/ios/iphoneos/Runner.app/${plugin}_privacy.bundle/${plugin}_privacy"
+            touch "build/ios/iphoneos/Runner.app/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
+            
+            # Create in framework location
+            mkdir -p "build/ios/iphoneos/Runner.app/Frameworks/${plugin}.framework/${plugin}_privacy.bundle"
+            touch "build/ios/iphoneos/Runner.app/Frameworks/${plugin}.framework/${plugin}_privacy.bundle/${plugin}_privacy"
+            touch "build/ios/iphoneos/Runner.app/Frameworks/${plugin}.framework/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
+            
+            # Create in special locations
+            for dir in "build" "ios" "ios/Flutter"; do
+              mkdir -p "${dir}/${plugin}_privacy.bundle"
+              touch "${dir}/${plugin}_privacy.bundle/${plugin}_privacy"
+              touch "${dir}/${plugin}_privacy.bundle/PrivacyInfo.xcprivacy"
+            done
+          done
+
+          echo "Created all privacy bundles for plugins"
+
       - name: Install CocoaPods
         run: |
           cd ios
@@ -111,6 +169,26 @@ jobs:
           mkdir -p build/url_launcher_ios_privacy.bundle
           touch build/url_launcher_ios_privacy.bundle/url_launcher_ios_privacy
           touch build/url_launcher_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Add similar fixes for sqflite_darwin
+          mkdir -p build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/sqflite_darwin_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/sqflite_darwin.framework/sqflite_darwin_privacy.bundle
+
+          touch build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/ios/Release-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/Debug-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/ios/Debug-iphoneos/sqflite_darwin/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/ios/iphoneos/Runner.app/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/sqflite_darwin.framework/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/sqflite_darwin.framework/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Create special directory for sqflite_darwin
+          mkdir -p build/sqflite_darwin_privacy.bundle
+          touch build/sqflite_darwin_privacy.bundle/sqflite_darwin_privacy
+          touch build/sqflite_darwin_privacy.bundle/PrivacyInfo.xcprivacy
 
       - name: Run comprehensive privacy bundle fix script
         run: |
