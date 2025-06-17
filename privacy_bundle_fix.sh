@@ -19,6 +19,7 @@ PLUGINS=(
   "flutter_secure_storage"
   "url_launcher_ios"
   "screen_brightness_ios"
+  "pointer_interceptor_ios"
   # Add any potential Flutter plugins that might need privacy bundles
   "flutter_local_notifications"
   "image_picker_ios"
@@ -111,6 +112,13 @@ for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
   touch "${base_dir}/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy"
 done
 
+# Special pointer_interceptor_ios handling
+echo "Adding special handling for pointer_interceptor_ios..."
+for base_dir in "build" "ios" "ios/Flutter" "build/ios/iphoneos"; do
+  mkdir -p "${base_dir}/pointer_interceptor_ios_privacy.bundle"
+  touch "${base_dir}/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy"
+done
+
 # Creating symlinks as additional fallback
 echo "Creating symlinks for additional fallback..."
 mkdir -p build/ios/Release-iphoneos/video_player_avfoundation
@@ -144,6 +152,18 @@ fi
 
 if [ -d "build/ios/Debug-iphoneos/screen_brightness_ios" ]; then
   ln -sf ../../iphoneos/Runner.app/screen_brightness_ios_privacy.bundle build/ios/Debug-iphoneos/screen_brightness_ios/
+fi
+
+# Symlinks for pointer_interceptor_ios
+mkdir -p build/ios/Release-iphoneos/pointer_interceptor_ios
+mkdir -p build/ios/Debug-iphoneos/pointer_interceptor_ios
+
+if [ -d "build/ios/Release-iphoneos/pointer_interceptor_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/pointer_interceptor_ios_privacy.bundle build/ios/Release-iphoneos/pointer_interceptor_ios/
+fi
+
+if [ -d "build/ios/Debug-iphoneos/pointer_interceptor_ios" ]; then
+  ln -sf ../../iphoneos/Runner.app/pointer_interceptor_ios_privacy.bundle build/ios/Debug-iphoneos/pointer_interceptor_ios/
 fi
 
 # Check which directories were actually created

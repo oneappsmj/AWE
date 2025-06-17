@@ -75,6 +75,7 @@ jobs:
             "path_provider_foundation"
             "flutter_secure_storage"
             "screen_brightness_ios"
+            "pointer_interceptor_ios"
             # Add any potential Flutter plugins that might need privacy bundles
             "flutter_local_notifications"
             "image_picker_ios"
@@ -243,6 +244,26 @@ jobs:
           mkdir -p build/screen_brightness_ios_privacy.bundle
           touch build/screen_brightness_ios_privacy.bundle/screen_brightness_ios_privacy
           touch build/screen_brightness_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Add similar fixes for pointer_interceptor_ios
+          mkdir -p build/ios/Release-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle
+          mkdir -p build/ios/Debug-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/pointer_interceptor_ios_privacy.bundle
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks/pointer_interceptor_ios.framework/pointer_interceptor_ios_privacy.bundle
+
+          touch build/ios/Release-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy
+          touch build/ios/Release-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/Debug-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy
+          touch build/ios/Debug-iphoneos/pointer_interceptor_ios/pointer_interceptor_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy
+          touch build/ios/iphoneos/Runner.app/pointer_interceptor_ios_privacy.bundle/PrivacyInfo.xcprivacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/pointer_interceptor_ios.framework/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy
+          touch build/ios/iphoneos/Runner.app/Frameworks/pointer_interceptor_ios.framework/pointer_interceptor_ios_privacy.bundle/PrivacyInfo.xcprivacy
+
+          # Create special directory for pointer_interceptor_ios
+          mkdir -p build/pointer_interceptor_ios_privacy.bundle
+          touch build/pointer_interceptor_ios_privacy.bundle/pointer_interceptor_ios_privacy
+          touch build/pointer_interceptor_ios_privacy.bundle/PrivacyInfo.xcprivacy
 
       - name: Run comprehensive privacy bundle fix script
         run: |
